@@ -1,0 +1,44 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: tedxlcupayments
+  data:
+    mongodb:
+      uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@aribadev1217.odfbw2z.mongodb.net/?retryWrites=true&w=majority&appName=aribadev1217
+      database: Tedxlcu-Payments
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    protocol: smtp
+    default-encoding: UTF-8
+    properties:
+      mail:
+        mine:
+          chartset : UTF-8
+        smtp:
+          writeTimeout: 10000
+          connectionTimeout: 20000
+          timeout: 10000
+          auth: true
+          ssl : 
+            enable: false
+          starttls:
+            enable: true
+            required: true
+    verify :
+      host: http://localhost:3000
+server:
+  port: 8080
+paystack:
+  secret-key: ${paystack.secret-key}
+  initialize-url: ${paystack.initialize-url}
+  verify-url: ${paystack.verify-url}
+frontend:
+  url: ${frontend-url}
+backend:
+  url: ${server.url}
+admin:
+  url: ${admin-url}
