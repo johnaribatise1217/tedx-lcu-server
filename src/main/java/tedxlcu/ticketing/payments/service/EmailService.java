@@ -25,6 +25,36 @@ public class EmailService {
   @Autowired
   private final JavaMailSender mailSender;
 
+  public void sendNewAccountMail(String to, String firstName, String lastName, String email, String password) throws Exception{
+    MimeMessage message = mailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message, true);
+    helper.setTo(to);
+    helper.setSubject("TEDx Lead City University New Account Created");
+
+    //Html template
+    String html = """
+              <html>
+              <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                  <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                      <h1 style="color: #FF0000; text-align: center;">TEDx Lead City University</h1>
+                      <p style="color: #555;">Hello %s %s,</p>
+                      <p style="color: #555;">Your admin account has been created successfully. Below are your login details:</p>
+                      <ul style="color: #555;">
+                          <li><strong>Email:</strong> %s</li>
+                          <li><strong>Password:</strong> %s</li>
+                      </ul>
+                      <p style="color: #555;">Please log in and change your password immediately for security purposes.</p>
+                      <p style="color: #555;">Best regards,<br/>TEDx Lead City University Team</p>
+                      <p style="text-align: center; color: #888; font-size: 12px;">&copy; TEDx Lead City University</p>
+                  </div>
+              </body>
+              </html>
+              """.formatted(firstName, lastName, email, password);
+
+        helper.setText(html, true);
+        mailSender.send(message);
+  }
+
   public void sendTicketMail(TicketBooking booking) throws Exception{
     MimeMessage message = mailSender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message, true);
