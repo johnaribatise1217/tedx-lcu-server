@@ -1,8 +1,4 @@
 spring:
-  profiles:
-    active: prod
-  application:
-    name: tedxlcupayments
   data:
     mongodb:
       uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@aribadev1217.odfbw2z.mongodb.net/?retryWrites=true&w=majority&appName=aribadev1217
@@ -29,7 +25,7 @@ spring:
             enable: true
             required: true
     verify :
-      host: http://localhost:3000
+      host: ${frontend-url}
 server:
   port: 8080
 paystack:
