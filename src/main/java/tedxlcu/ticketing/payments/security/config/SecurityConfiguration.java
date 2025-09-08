@@ -18,10 +18,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import tedxlcu.ticketing.payments.security.jwt.AuthenticationTokenFilter;
 import tedxlcu.ticketing.payments.security.user.AdminUserDetailsService;
 
 @Configuration
@@ -32,9 +34,11 @@ public class SecurityConfiguration {
   private AdminUserDetailsService adminUserDetailsService;
   @Autowired
   private JwtEntryPoint authenticationEntryPoint;
+  @Autowired
+  private AuthenticationTokenFilter authenticationTokenFilter;
 
   private static final List<String> SECURED_URLS = List.of(
-    "/api/blogs/create", "/api/blogs/{id}", "/api/blogs/update/{id}", "/api/blogs/delete/{id}"
+    "/api/blogs/create", "/api/blogs/{id}", "/api/blogs/update/{id}", "/api/blogs/delete/{id}" , "/api/auth/me/**" , "/api/auth/create-admin"
   );
 
   @Bean
@@ -89,6 +93,7 @@ public class SecurityConfiguration {
       .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
       http.authenticationProvider(authenticationProvider());
+      http.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 }

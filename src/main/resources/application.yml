@@ -30,6 +30,10 @@ spring:
             required: true
     verify :
       host: http://localhost:3000
+security:
+  jwt:
+    secret: ${jwt-secret-key}
+    expiration-ms: ${jwt-expiration-ms}
 server:
   port: 8080
 paystack:
