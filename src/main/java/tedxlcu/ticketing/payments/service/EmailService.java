@@ -25,7 +25,7 @@ public class EmailService {
   @Autowired
   private final JavaMailSender mailSender;
 
-  public void sendNewAccountMail(String to, String firstName, String lastName, String email, String password) throws Exception{
+  public void sendNewAccountMail(String to, String firstName, String lastName, String email, String password, String loginUrl) throws Exception{
     MimeMessage message = mailSender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message, true);
     helper.setTo(to);
@@ -42,6 +42,7 @@ public class EmailService {
                       <ul style="color: #555;">
                           <li><strong>Email:</strong> %s</li>
                           <li><strong>Password:</strong> %s</li>
+                          <li><strong>Login URL:</strong> <a href="%s">%s</a></li>
                       </ul>
                       <p style="color: #555;">Please log in and change your password immediately for security purposes.</p>
                       <p style="color: #555;">Best regards,<br/>TEDx Lead City University Team</p>
@@ -49,7 +50,7 @@ public class EmailService {
                   </div>
               </body>
               </html>
-              """.formatted(firstName, lastName, email, password);
+              """.formatted(firstName, lastName, email, password, loginUrl, loginUrl);
 
         helper.setText(html, true);
         mailSender.send(message);
