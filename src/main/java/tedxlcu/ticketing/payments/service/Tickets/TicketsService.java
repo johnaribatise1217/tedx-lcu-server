@@ -60,6 +60,8 @@ public class TicketsService implements ITicketsService{
     newBooking.setTicketTypeId(ticketId);
     newBooking.setAmountPaid(request.getAmount());
     newBooking.setTicketQuantity(request.getQuantity());
+    newBooking.setFaculty(request.getFaculty());
+    newBooking.setCourseOfStudy(request.getCourseOfStudy());
 
     return bookingRepository.save(newBooking);
   }

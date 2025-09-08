@@ -9,6 +9,8 @@ public class createTicketBookingReq {
   private String email;
   private String phone;
   private String institution;
+  private String faculty;
+  private String courseOfStudy;
   private String gender; // From screenshot form
   private int amount;
   private int quantity;

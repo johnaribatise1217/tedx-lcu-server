@@ -29,6 +29,8 @@ public class TicketBooking {
   private String transactionReference; // From Paystack
   private int ticketQuantity;
   private int amountPaid;
+  private String faculty;
+  private String courseOfStudy;
   private boolean paid;
   private boolean isVerified;
   private String qrCodeUrl;
