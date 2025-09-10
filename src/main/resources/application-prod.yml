@@ -1,13 +1,14 @@
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@aribadev1217.odfbw2z.mongodb.net/?retryWrites=true&w=majority&appName=aribadev1217
+      uri: mongodb+srv://${MONGO_USERNAME_PROD}:${MONGO_PASSWORD_PROD}@tedxlcu.izibtxs.mongodb.net/?retryWrites=true&w=majority&appName=tedxLcu
+      # uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@aribadev1217.odfbw2z.mongodb.net/?retryWrites=true&w=majority&appName=aribadev1217
       database: Tedxlcu-Payments
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${PROD_MAIL_USERNAME}
+    password: ${PROD_MAIL_PASSWORD}
     protocol: smtp
     default-encoding: UTF-8
     properties:
@@ -33,7 +34,7 @@ security:
 server:
   port: 8080
 paystack:
-  secret-key: ${paystack.secret-key}
+  secret-key: ${paystack.secret-key-prod}
   initialize-url: ${paystack.initialize-url}
   verify-url: ${paystack.verify-url}
 frontend:

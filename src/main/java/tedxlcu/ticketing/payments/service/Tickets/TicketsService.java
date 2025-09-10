@@ -6,7 +6,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import tedxlcu.ticketing.payments.DTO.TicketAdminDetails;
 import tedxlcu.ticketing.payments.Exception.AlreadyExistsException;
+import tedxlcu.ticketing.payments.Mapper.DtoMapper;
 import tedxlcu.ticketing.payments.Request.createTicketBookingReq;
 import tedxlcu.ticketing.payments.Request.createTicketsReq;
 import tedxlcu.ticketing.payments.model.TicketBooking;
@@ -65,5 +67,29 @@ public class TicketsService implements ITicketsService{
 
     return bookingRepository.save(newBooking);
   }
+
+  @Override
+  public List<TicketAdminDetails> getAllBookingsForAdmin() {
+    List<Tickets> tickets = ticketRepository.findAll();
+    List<TicketBooking> bookings = bookingRepository.findAll();
+    int numVerifiedBookings = (int) bookings.stream().filter(b -> b.isVerified()).count();
+    int numUnverifiedBookings = (int) bookings.stream().filter(b -> !b.isVerified()).count();
+    int totalTicketsSold = bookings.stream().mapToInt(b -> b.getTicketQuantity()).sum();
+    TicketAdminDetails details = new TicketAdminDetails(DtoMapper.mapToTicketCardList(tickets), numVerifiedBookings, numUnverifiedBookings, totalTicketsSold, bookings);
+    return List.of(details);
+  }
+
+	@Override
+	public boolean verifyTicketBooking(String ticketId) {
+    TicketBooking booking = bookingRepository.findById(ticketId).orElseThrow(
+      () -> new RuntimeException("Booking not found")
+    );
+    if(booking.isVerified()){
+      throw new AlreadyExistsException("Ticket has already been verified");
+    }
+    booking.setVerified(true);
+    bookingRepository.save(booking);
+    return true;
+	}
   
 }
