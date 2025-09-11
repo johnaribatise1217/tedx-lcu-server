@@ -45,15 +45,15 @@ public class TicketController {
 
   @GetMapping("/admin/bookings")
   public ResponseEntity<ApiResponse> getAllBookingsForAdmin(){
-    List<TicketAdminDetails> details = ticketsService.getAllBookingsForAdmin();
+    TicketAdminDetails details = ticketsService.getAllBookingsForAdmin();
     return ResponseEntity.status(
       HttpStatus.OK
     ).body(new ApiResponse(true, "200", "Fetched successfully", details));
   }
 
-  @PutMapping("/admin/verify/{ticketid}")
-  public ResponseEntity<ApiResponse> verifyTicketBooking(@PathVariable String ticketid){
-    boolean isVerified = ticketsService.verifyTicketBooking(ticketid);
+  @PutMapping("/admin/verify/{id}")
+  public ResponseEntity<ApiResponse> verifyTicketBooking(@PathVariable String id){// Debug log
+    boolean isVerified = ticketsService.verifyTicketBooking(id);
     return ResponseEntity.status(
       HttpStatus.OK
     ).body(new ApiResponse(true, "200", "Ticket verified successfully", isVerified));

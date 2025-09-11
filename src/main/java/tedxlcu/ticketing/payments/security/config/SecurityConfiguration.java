@@ -33,8 +33,6 @@ public class SecurityConfiguration {
   @Autowired
   private AdminUserDetailsService adminUserDetailsService;
   @Autowired
-  private JwtEntryPoint authenticationEntryPoint;
-  @Autowired
   private AuthenticationTokenFilter authenticationTokenFilter;
 
   private static final List<String> SECURED_URLS = List.of(
@@ -71,7 +69,7 @@ public class SecurityConfiguration {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:3001"));
+    configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:3001", "https://tedx-lcu-deployed.vercel.app"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setMaxAge(3600L);
@@ -91,7 +89,6 @@ public class SecurityConfiguration {
           .requestMatchers(SECURED_URLS.toArray(new String[0])).authenticated()
           .anyRequest().permitAll()
       )
-      .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
       http.authenticationProvider(authenticationProvider());
       http.addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);

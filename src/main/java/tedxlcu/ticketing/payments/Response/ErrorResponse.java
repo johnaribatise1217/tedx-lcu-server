@@ -13,6 +13,6 @@ public class ErrorResponse {
   private boolean success = false;
   private String apiPath;
   private HttpStatus errorCode;
-  private String errorMessage;
+  private String message;
   private LocalDateTime errorTime;
 }

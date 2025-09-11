@@ -26,8 +26,6 @@ import tedxlcu.ticketing.payments.security.user.AdminUserDetails;
 public class JwtService {
   @Value("${security.jwt.secret}")
   private String jwtSecret;
-  @Value("${security.jwt.expiration-ms}")
-  private Long jwtExpirationMs;
 
   public String generateToken(
     Authentication authentication
@@ -45,7 +43,7 @@ public class JwtService {
         .claim("role", role)
         .signWith(getSignInKey())
         .setIssuedAt(new Date())
-        .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+        .setExpiration(new Date(System.currentTimeMillis()+ 1000 * 60 * 72))
         .signWith(getSignInKey(), SignatureAlgorithm.HS256)
         .compact();
   }

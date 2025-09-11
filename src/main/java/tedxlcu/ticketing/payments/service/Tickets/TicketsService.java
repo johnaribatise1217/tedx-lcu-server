@@ -69,14 +69,14 @@ public class TicketsService implements ITicketsService{
   }
 
   @Override
-  public List<TicketAdminDetails> getAllBookingsForAdmin() {
+  public TicketAdminDetails getAllBookingsForAdmin() {
     List<Tickets> tickets = ticketRepository.findAll();
     List<TicketBooking> bookings = bookingRepository.findAll();
     int numVerifiedBookings = (int) bookings.stream().filter(b -> b.isVerified()).count();
     int numUnverifiedBookings = (int) bookings.stream().filter(b -> !b.isVerified()).count();
     int totalTicketsSold = bookings.stream().mapToInt(b -> b.getTicketQuantity()).sum();
     TicketAdminDetails details = new TicketAdminDetails(DtoMapper.mapToTicketCardList(tickets), numVerifiedBookings, numUnverifiedBookings, totalTicketsSold, bookings);
-    return List.of(details);
+    return details;
   }
 
 	@Override

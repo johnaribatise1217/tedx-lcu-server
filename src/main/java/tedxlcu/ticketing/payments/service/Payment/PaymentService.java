@@ -114,9 +114,8 @@ public class PaymentService {
         );
         TicketBooking newTicketBooking = ticketsService.creatTicketBooking(request, reference, ticketId);
         newTicketBooking.setTicketName(exisTicket.getName());
-        newTicketBooking.setQrCodeUrl(adminUrl + "/admin/tickets/verify/" + newTicketBooking.getId());
+        newTicketBooking.setQrCodeUrl(adminUrl + "/admin/verify/" + newTicketBooking.getId());
         bookingRepository.save(newTicketBooking);
-
 
         Query query = new Query(Criteria.where("id")
         .is(exisTicket.getId()).and("availableQuantity").gt(0));

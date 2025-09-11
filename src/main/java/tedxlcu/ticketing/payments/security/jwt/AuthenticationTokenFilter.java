@@ -59,10 +59,10 @@ public class AuthenticationTokenFilter extends OncePerRequestFilter {
           SecurityContextHolder.getContext().setAuthentication(auth);
         }
       }
+      filterChain.doFilter(request, response);
     } catch (JwtException | IllegalArgumentException | NullPointerException e) {
       handlerExceptionResolver.resolveException(request, response, null, e);
     } 
-    filterChain.doFilter(request, response);
   } 
 
   private String parseJwt(HttpServletRequest request){
