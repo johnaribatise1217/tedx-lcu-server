@@ -77,7 +77,7 @@ public class EmailService {
                           <img src="data:image/png;base64,%s" alt="QR Code" style="width: 200px; height: 200px;"/>
                           <p>Scan this QR at the event for verification.</p>
                       </div>
-                      <p style="color: #555;">Event Details: November [Date], Lead City University. See you there!</p>
+                      <p style="color: #555;">Event Details: November 7, 2025 Lead City University Conference Center. See you there!</p>
                       <p style="text-align: center; color: #888; font-size: 12px;">&copy; TEDx Lead City University</p>
                   </div>
               </body>
