@@ -38,8 +38,8 @@ paystack:
   initialize-url: ${paystack.initialize-url}
   verify-url: ${paystack.verify-url}
 frontend:
-  url: ${frontend-url}
+  url: ${frontend-url-prod}
 backend:
   url: ${server.url}
 admin:
-  url: ${admin-url}
+  url: ${admin-url-prod}

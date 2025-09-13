@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import tedxlcu.ticketing.payments.DTO.TicketAdminDetails;
@@ -71,7 +72,7 @@ public class TicketsService implements ITicketsService{
   @Override
   public TicketAdminDetails getAllBookingsForAdmin() {
     List<Tickets> tickets = ticketRepository.findAll();
-    List<TicketBooking> bookings = bookingRepository.findAll();
+    List<TicketBooking> bookings = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
     int numVerifiedBookings = (int) bookings.stream().filter(b -> b.isVerified()).count();
     int numUnverifiedBookings = (int) bookings.stream().filter(b -> !b.isVerified()).count();
     int totalTicketsSold = bookings.stream().mapToInt(b -> b.getTicketQuantity()).sum();
