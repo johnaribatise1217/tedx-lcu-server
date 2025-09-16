@@ -78,6 +78,51 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return new ResponseEntity<>(error, error.getErrorCode());
   }
 
+  @ExceptionHandler(DiscountExpiredException.class)
+  public ResponseEntity<ErrorResponse>
+  handleDiscountException(
+    DiscountExpiredException ex, WebRequest request
+  ) {
+    ErrorResponse error = new ErrorResponse(
+      false,
+      request.getDescription(false),
+      HttpStatus.FORBIDDEN,
+      ex.getMessage(),
+      LocalDateTime.now()
+    );
+    return new ResponseEntity<>(error, error.getErrorCode());
+  }
+
+  @ExceptionHandler(InvalidDiscountCodeException.class)
+  public ResponseEntity<ErrorResponse>
+  handleInvalidDiscountCodeException(
+    InvalidDiscountCodeException ex, WebRequest request
+  ) {
+    ErrorResponse error = new ErrorResponse(
+      false,
+      request.getDescription(false),
+      HttpStatus.BAD_REQUEST,
+      ex.getMessage(),
+      LocalDateTime.now()
+    );
+    return new ResponseEntity<>(error, error.getErrorCode());
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<ErrorResponse>
+  handleForbiddenException(
+    ForbiddenException ex, WebRequest request
+  ){
+    ErrorResponse error = new ErrorResponse(
+      false,
+      request.getDescription(false),
+      HttpStatus.FORBIDDEN,
+      ex.getMessage(),
+      LocalDateTime.now()
+    );
+    return new ResponseEntity<>(error, error.getErrorCode());
+  }
+
   @ExceptionHandler(UsernameNotFoundException.class)
   public ResponseEntity<ErrorResponse>
   handleUsernameNotFoundException(

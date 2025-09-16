@@ -29,15 +29,10 @@ public class PaymentController {
   @PostMapping("/initialize")
   public ResponseEntity<ApiResponse> 
   initializePayment(@RequestBody InitializePaymentRequest request) throws Exception{
-    try {
-      String authorizationUrl = paymentService.initiatePayment(request);
-      return ResponseEntity.status(
-        HttpStatus.OK
-      ).body(new ApiResponse(true, "200", "init", authorizationUrl));
-    } catch (Exception e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
-      body(new ApiResponse(false, "500", e.getMessage(), null));
-    }
+    String authorizationUrl = paymentService.initiatePayment(request);
+    return ResponseEntity.status(
+      HttpStatus.OK
+    ).body(new ApiResponse(true, "200", "init", authorizationUrl));
   }
 
   @PostMapping("/callback")

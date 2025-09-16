@@ -35,6 +35,10 @@ public class TicketBooking {
   private boolean isVerified;
   private String qrCodeUrl;
   
+  private boolean isDiscount;
+  private String discountCode;
+  private int discountPercentage;
+  
   @CreatedDate
   private LocalDateTime createdAt;
 

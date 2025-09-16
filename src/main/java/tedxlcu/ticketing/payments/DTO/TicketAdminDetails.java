@@ -14,4 +14,5 @@ public class TicketAdminDetails {
   private int numUnverifiedBookings;
   private int totalTicketsSold;
   private List<TicketBooking> bookings;
+  private int numTicketsSoldByDiscount;
 }

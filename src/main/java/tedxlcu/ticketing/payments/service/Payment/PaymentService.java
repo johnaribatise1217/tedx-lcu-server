@@ -24,10 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import tedxlcu.ticketing.payments.Exception.ResourceNotFoundException;
 import tedxlcu.ticketing.payments.Request.InitializePaymentRequest;
 import tedxlcu.ticketing.payments.Request.createTicketBookingReq;
+import tedxlcu.ticketing.payments.model.DiscountWindow;
 import tedxlcu.ticketing.payments.model.TicketBooking;
 import tedxlcu.ticketing.payments.model.Tickets;
 import tedxlcu.ticketing.payments.repository.TicketBookingRepository;
 import tedxlcu.ticketing.payments.repository.TicketRepository;
+import tedxlcu.ticketing.payments.service.Discount.IDiscountService;
 import tedxlcu.ticketing.payments.service.Tickets.TicketsService;
 
 @Service
@@ -55,6 +57,8 @@ public class PaymentService {
   private TicketRepository ticketRepository;
   @Autowired
   private TicketsService ticketsService;
+  @Autowired
+  private IDiscountService discountService;
 
   //initialize payment
   public String initiatePayment(InitializePaymentRequest request) throws Exception{
@@ -64,7 +68,24 @@ public class PaymentService {
     if(exisTicket.getAvailableQuantity() <= 0){
       throw new Exception("Oops, Ticket Sold out!");
     }
-    int amountToBePaid = exisTicket.getPrice() * request.getQuantity() * 100;
+    // base amount in Naira (ticket price assumed in Naira), convert to kobo (Paystack expects kobo)
+    int baseAmount = exisTicket.getPrice() * request.getQuantity();
+    int amountToBePaidKobo = baseAmount * 100;
+    // apply discount if provided (assumes InitializePaymentRequest#getDiscountCode exists)
+    String discountCode = null;
+    int discountPercentage = 0;
+    boolean isDiscount = false;
+    try {
+      discountCode = request.getDiscountCode();
+    } catch (Exception ignore) {}
+    if (discountCode != null && !discountCode.isBlank()) {
+      DiscountWindow w = discountService.validateCode(discountCode);
+      discountPercentage = w.getPercentage();
+      int pct = Math.max(0, Math.min(100, w.getPercentage()));
+      amountToBePaidKobo = (int) Math.round(amountToBePaidKobo * (100 - pct) / 100.0);
+      isDiscount = true;
+    }
+    int amountToBePaid = amountToBePaidKobo;
     String uniqueRef = "TEDX2025_" + UUID.randomUUID().toString();
 
     Map<String, Object> payload = new HashMap<>();
@@ -73,6 +94,14 @@ public class PaymentService {
     payload.put("currency", "NGN");
     payload.put("reference", uniqueRef);
     payload.put("callback_url", frontendUrl + "/tickets/payments/success?ticketId="+request.getTicketId());
+
+    Map<String, Object> metadata = new HashMap<>();
+    metadata.put("cancel_action", frontendUrl + "/tickets");
+    metadata.put("discount_percentage", discountPercentage);
+    metadata.put("discount_code", discountCode);
+    metadata.put("isDiscount", isDiscount);
+
+    payload.put("metadata", metadata);
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
       HttpPost newPost = new HttpPost(initUrl);
@@ -110,11 +139,50 @@ public class PaymentService {
         ) 
       {
         Tickets exisTicket = ticketRepository.findById(ticketId).orElseThrow(
-          () -> new ResourceNotFoundException("request cannot be found")
+          () -> new ResourceNotFoundException("ticket cannot be found")
         );
         TicketBooking newTicketBooking = ticketsService.creatTicketBooking(request, reference, ticketId);
         newTicketBooking.setTicketName(exisTicket.getName());
         newTicketBooking.setQrCodeUrl(adminUrl + "/admin/verify/" + newTicketBooking.getId());
+        bookingRepository.save(newTicketBooking);
+
+        Map<?,?> data = (Map<?,?>) resMap.get("data");
+        Map<?,?> metadata = null;
+        if (data != null && data.get("metadata") instanceof Map) {
+          metadata = (Map<?,?>) data.get("metadata");
+        }
+
+        Integer amountFromPaystackKobo = null;
+        if (data != null && data.get("amount") != null) {
+          try {
+            amountFromPaystackKobo = Integer.parseInt(String.valueOf(data.get("amount")));
+          } catch (NumberFormatException ignore) {}
+        }
+
+        if (amountFromPaystackKobo != null) {
+          newTicketBooking.setAmountPaid(amountFromPaystackKobo / 100);
+        }
+
+        boolean isDiscount = false;
+        int discountPercentage = 0;
+        String discountCode = null;
+        if (metadata != null) {
+          Object isDiscObj = metadata.get("isDiscount");
+          if (isDiscObj != null) {
+            isDiscount = Boolean.parseBoolean(String.valueOf(isDiscObj));
+            newTicketBooking.setDiscount(isDiscount);
+          }
+          Object dpObj = metadata.get("discount_percentage");
+          if (dpObj != null) {
+            try {
+              discountPercentage = Integer.parseInt(String.valueOf(dpObj));
+              newTicketBooking.setDiscountPercentage(discountPercentage);
+            } catch (NumberFormatException ignore) {}
+          }
+          Object dcObj = metadata.get("discount_code");
+          if (dcObj != null) discountCode = String.valueOf(dcObj);
+          newTicketBooking.setDiscountCode(discountCode);
+        }
         bookingRepository.save(newTicketBooking);
 
         Query query = new Query(Criteria.where("id")

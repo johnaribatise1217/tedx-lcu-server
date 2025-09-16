@@ -1,9 +1,14 @@
 package tedxlcu.ticketing.payments.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,19 +16,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import tedxlcu.ticketing.payments.Exception.ForbiddenException;
-import tedxlcu.ticketing.payments.Request.JwtResponse;
-import tedxlcu.ticketing.payments.Request.LoginRequest;
-import tedxlcu.ticketing.payments.Request.UpdatePasswordRequest;
-import tedxlcu.ticketing.payments.Request.createUserRequest;
+import tedxlcu.ticketing.payments.Request.CreateDiscountWindow;
 import tedxlcu.ticketing.payments.Response.ApiResponse;
+import tedxlcu.ticketing.payments.model.DiscountWindow;
 import tedxlcu.ticketing.payments.security.user.AdminUserDetails;
-import tedxlcu.ticketing.payments.service.user.UserService;
+import tedxlcu.ticketing.payments.service.Discount.IDiscountService;
 
 @RestController
-@RequestMapping("/api/auth")
-public class AuthController {
+@RequestMapping("/api/discounts")
+public class DiscountController {
   @Autowired
-  private UserService userService;
+  private IDiscountService discountService;
 
   private String getCurrentUserId(Authentication authentication) {
     Object principal = authentication.getPrincipal();
@@ -32,6 +35,20 @@ public class AuthController {
     } else {
       throw new IllegalStateException("Unexpected principal type: ");
     }
+  }
+
+  @GetMapping("/open-discount")
+  public ResponseEntity<ApiResponse> listOpen() {
+    return ResponseEntity.ok().body(
+      new ApiResponse(true, "200", "fetched", discountService.listOpenWindows())
+    );
+  }
+
+  @GetMapping("/validate/{code}")
+  public ResponseEntity<ApiResponse> validateCode(@PathVariable String code){
+    return ResponseEntity.ok().body(
+      new ApiResponse(true, "200", "code is valid", discountService.validateCode(code))
+    );
   }
 
   private boolean isAdmin(Authentication authentication) {
@@ -54,41 +71,35 @@ public class AuthController {
     }
     return true;
   }
-
-  @PostMapping("/login")
-  public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest loginRequest) {
-    JwtResponse jwtResponse = userService.authenticateUser(loginRequest);
-    return ResponseEntity.ok(
-      new ApiResponse(true, "200", "Login successful", jwtResponse)
-    );
-  }
-
-  @PostMapping("/create-admin")
-  public ResponseEntity<ApiResponse> 
-  createAdmin(@RequestBody createUserRequest createUserRequest, 
-  Authentication authentication) 
-  throws Exception {
+  
+  @PostMapping("/create")
+  public ResponseEntity<ApiResponse> create(
+    @RequestBody CreateDiscountWindow window, 
+    Authentication authentication
+  ) {
     isAdmin(authentication);
-    userService.createUser(createUserRequest);
-    return ResponseEntity.ok(
-      new ApiResponse(true, "200", "Admin created successfully", null)
-    );
+    String userId = getCurrentUserId(authentication);
+    discountService.createWindow(window, userId);
+    return ResponseEntity.status(
+      HttpStatus.CREATED
+    ).body(new ApiResponse(true, "201", "Discount window created successfully", null));
   }
 
-  @GetMapping("/me")
-  public ResponseEntity<ApiResponse> getAuthUser(Authentication authentication) {
-    String userId = getCurrentUserId(authentication);
-    return ResponseEntity.ok(
-      new ApiResponse(true, "200", "Fetched successfully", userService.getAuthUser(userId))
-    );
+  @DeleteMapping("/{id}/delete")
+  public ResponseEntity<ApiResponse> delete(@PathVariable String id, Authentication authentication) {
+    isAdmin(authentication);
+    discountService.deleteWindow(id);
+    return ResponseEntity.ok().body(new ApiResponse(true, "200", "Deleted successfully", null));
   }
 
-  @PutMapping("/me/update-password")
-  public ResponseEntity<ApiResponse> updatePassword(Authentication authentication , @RequestBody UpdatePasswordRequest request) {
+  @PutMapping("/{id}/refresh-code")
+  public ResponseEntity<ApiResponse>
+  refresh(@PathVariable String id, Authentication authentication) {
+    isAdmin(authentication);
     String userId = getCurrentUserId(authentication);
-    userService.updateUserPassword(userId, request.getNewPassword() , request.getOldPassword());
-    return ResponseEntity.ok(
-      new ApiResponse(true, "200", "Password updated successfully", null)
+    discountService.refreshCode(id, userId);
+    return ResponseEntity.ok().body(
+      new ApiResponse(true, "200", "Refreshed successfully", null)
     );
   }
 }

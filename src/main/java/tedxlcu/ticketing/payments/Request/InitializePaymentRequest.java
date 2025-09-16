@@ -7,4 +7,5 @@ public class InitializePaymentRequest {
   private String ticketId;
   private int quantity;
   private String email;
+  private String discountCode;
 }
