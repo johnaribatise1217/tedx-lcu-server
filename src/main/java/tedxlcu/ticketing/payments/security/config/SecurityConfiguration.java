@@ -36,8 +36,8 @@ public class SecurityConfiguration {
   private AuthenticationTokenFilter authenticationTokenFilter;
 
   private static final List<String> SECURED_URLS = List.of(
-    "/api/blogs/create", "/api/blogs/{id}", "/api/blogs/update/{id}", 
-    "/api/blogs/delete/{id}" , "/api/auth/me/**" , "/api/auth/create-admin", "/api/tickets/admin/**",
+    "/api/blogs/create", "/api/blogs/delete/{id}", "/api/blogs/update/{id}", 
+     "/api/auth/me/**" , "/api/auth/create-admin", "/api/tickets/admin/**",
     "/api/discounts/{id}/delete", "/api/discounts/create", "/api/discounts/{id}/refresh-code",
     "/api/speakers/create" , "/api/speakers/delete", "/api/speakers/update"
   );

@@ -41,7 +41,7 @@ public class BlogController {
     );
   }
 
-  @GetMapping("/{id}")
+  @GetMapping("/view/{id}")
   public ResponseEntity<ApiResponse> getBlogById(@PathVariable String id) {
     return ResponseEntity.ok(
       new ApiResponse(
