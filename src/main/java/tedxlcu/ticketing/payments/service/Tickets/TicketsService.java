@@ -77,7 +77,8 @@ public class TicketsService implements ITicketsService{
     int numUnverifiedBookings = (int) bookings.stream().filter(b -> !b.isVerified()).count();
     int totalTicketsSold = bookings.stream().mapToInt(b -> b.getTicketQuantity()).sum();
     int numTicketsSoldByDiscount = (int) bookings.stream().filter(TicketBooking::isDiscount).count();
-    TicketAdminDetails details = new TicketAdminDetails(DtoMapper.mapToTicketCardList(tickets), numVerifiedBookings, numUnverifiedBookings, totalTicketsSold, bookings, numTicketsSoldByDiscount);
+    int totalIncome = bookings.stream().mapToInt(b -> b.getAmountPaid()).sum();
+    TicketAdminDetails details = new TicketAdminDetails(DtoMapper.mapToTicketCardList(tickets), numVerifiedBookings, numUnverifiedBookings, totalTicketsSold, bookings, numTicketsSoldByDiscount, totalIncome);
     return details;
   }
 

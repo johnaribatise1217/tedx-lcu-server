@@ -15,4 +15,6 @@ public class TicketAdminDetails {
   private int totalTicketsSold;
   private List<TicketBooking> bookings;
   private int numTicketsSoldByDiscount;
+  
+  private int totalAmount;
 }

@@ -62,8 +62,29 @@ public class EmailService {
     helper.setTo(booking.getEmail());
     helper.setSubject("TEDx Lead City University Ticket Confirmation");
 
-    String qrBase64 = generateQRBase64(booking.getQrCodeUrl());
-    
+    String qrBase64 = null;
+    String qrUrl = booking.getQrCodeUrl();
+    String bookingId = booking.getId();
+    if (qrUrl == null || qrUrl.isBlank()) {
+      System.err.println("EmailService: booking QR URL is missing for booking id=" + String.valueOf(bookingId));
+    } else {
+      try {
+        qrBase64 = generateQRBase64(qrUrl);
+      } catch (WriterException | IOException e) {
+        System.err.println("EmailService: failed to generate QR for url=" + qrUrl + " error=" + e.getMessage());
+        qrBase64 = null;
+      }
+    }
+
+    String imageSection;
+    if (qrBase64 != null) {
+      imageSection = "<img src=\"data:image/png;base64," + qrBase64 + "\" alt=\"QR Code\" style=\"width: 200px; height: 200px;\"/>";
+    } else if (bookingId != null && !bookingId.isBlank()) {
+      imageSection = "<p><a href=\"/admin/verify/" + bookingId + "\">Click here to view your ticket</a></p>";
+    } else {
+      imageSection = "<p>QR unavailable. Please open your admin dashboard to view your ticket.</p>";
+    }
+
     //Html template
     String html = """
               <html>
@@ -74,7 +95,7 @@ public class EmailService {
                       <div style="text-align: center; margin: 20px 0;">
                           <h2 style="color: #007bff;">%s %s</h2>
                           <p><strong>Ticket Type:</strong> %s</p>
-                          <img src="data:image/png;base64,%s" alt="QR Code" style="width: 200px; height: 200px;"/>
+                          %s
                           <p>Scan this QR at the event for verification.</p>
                       </div>
                       <p style="color: #555;">Event Details: November 7, 2025 Lead City University Conference Center. See you there!</p>
@@ -82,10 +103,10 @@ public class EmailService {
                   </div>
               </body>
               </html>
-              """.formatted(booking.getFirstName(), booking.getLastName(), booking.getTicketName(), qrBase64);
+              """.formatted(booking.getFirstName(), booking.getLastName(), booking.getTicketName(), imageSection);
 
-        helper.setText(html, true);
-        mailSender.send(message);
+    helper.setText(html, true);
+    mailSender.send(message);
   }
 
   private String generateQRBase64(String url) throws WriterException, IOException {

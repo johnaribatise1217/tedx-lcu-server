@@ -38,7 +38,8 @@ public class SecurityConfiguration {
   private static final List<String> SECURED_URLS = List.of(
     "/api/blogs/create", "/api/blogs/{id}", "/api/blogs/update/{id}", 
     "/api/blogs/delete/{id}" , "/api/auth/me/**" , "/api/auth/create-admin", "/api/tickets/admin/**",
-    "/api/discounts/{id}/delete", "/api/discounts/create", "/api/discounts/{id}/refresh-code"
+    "/api/discounts/{id}/delete", "/api/discounts/create", "/api/discounts/{id}/refresh-code",
+    "/api/speakers/create" , "/api/speakers/delete", "/api/speakers/update"
   );
 
   @Bean
@@ -70,7 +71,11 @@ public class SecurityConfiguration {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of("https://tedx-lcu-admin-deployed.vercel.app","http://localhost:3000", "http://localhost:3001", "https://www.tedxleadcityuniversity.ng", "https://tedx-lcu-deployed.vercel.app"));
+    configuration.setAllowedOrigins(List.of(
+      "https://tedx-lcu-admin-deployed.vercel.app",
+      "http://localhost:3000", "http://localhost:3001",
+       "https://www.tedxleadcityuniversity.ng", 
+       "https://tedx-lcu-deployed.vercel.app"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setMaxAge(3600L);

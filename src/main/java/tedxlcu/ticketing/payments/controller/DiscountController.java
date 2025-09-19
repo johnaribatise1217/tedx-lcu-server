@@ -1,7 +1,5 @@
 package tedxlcu.ticketing.payments.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import tedxlcu.ticketing.payments.Exception.ForbiddenException;
 import tedxlcu.ticketing.payments.Request.CreateDiscountWindow;
 import tedxlcu.ticketing.payments.Response.ApiResponse;
-import tedxlcu.ticketing.payments.model.DiscountWindow;
 import tedxlcu.ticketing.payments.security.user.AdminUserDetails;
 import tedxlcu.ticketing.payments.service.Discount.IDiscountService;
 
