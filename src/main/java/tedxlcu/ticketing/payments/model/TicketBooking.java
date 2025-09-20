@@ -44,4 +44,6 @@ public class TicketBooking {
 
   @LastModifiedDate
   private LocalDateTime updatedAt;
+
+  private String verifiedBy;
 }

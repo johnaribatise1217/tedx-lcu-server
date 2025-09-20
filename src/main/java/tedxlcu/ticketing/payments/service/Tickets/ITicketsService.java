@@ -14,5 +14,5 @@ public interface ITicketsService {
   List<Tickets> GetAllTickets();
   TicketBooking creatTicketBooking(createTicketBookingReq request, String trxRef, String ticketId);
   TicketAdminDetails getAllBookingsForAdmin();
-  boolean verifyTicketBooking(String ticketId);
+  boolean verifyTicketBooking(String ticketId, String userId);
 }

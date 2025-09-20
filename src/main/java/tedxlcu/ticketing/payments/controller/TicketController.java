@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import tedxlcu.ticketing.payments.DTO.TicketAdminDetails;
 import tedxlcu.ticketing.payments.Request.createTicketsReq;
 import tedxlcu.ticketing.payments.Response.ApiResponse;
 import tedxlcu.ticketing.payments.model.Tickets;
+import tedxlcu.ticketing.payments.security.user.AdminUserDetails;
 import tedxlcu.ticketing.payments.service.Tickets.ITicketsService;
 
 @RestController
@@ -26,6 +28,15 @@ import tedxlcu.ticketing.payments.service.Tickets.ITicketsService;
 public class TicketController {
   @Autowired
   private ITicketsService ticketsService;
+
+  private String getCurrentUserId(Authentication authentication) {
+    Object principal = authentication.getPrincipal();
+    if (principal instanceof AdminUserDetails) {
+      return ((AdminUserDetails) principal).getId();
+    } else {
+      throw new IllegalStateException("Unexpected principal type: ");
+    }
+  }
 
   @PostMapping("/create")
   public ResponseEntity<ApiResponse> createTicket(@RequestBody createTicketsReq req){
@@ -59,8 +70,9 @@ public class TicketController {
   }
 
   @PutMapping("/admin/verify/{id}")
-  public ResponseEntity<ApiResponse> verifyTicketBooking(@PathVariable String id){// Debug log
-    boolean isVerified = ticketsService.verifyTicketBooking(id);
+  public ResponseEntity<ApiResponse> verifyTicketBooking(Authentication authentication, @PathVariable String id){// Debug log
+    String userId = getCurrentUserId(authentication);
+    boolean isVerified = ticketsService.verifyTicketBooking(id, userId);
     return ResponseEntity.status(
       HttpStatus.OK
     ).body(new ApiResponse(true, "200", "Ticket verified successfully", isVerified));

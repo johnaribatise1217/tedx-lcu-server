@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import tedxlcu.ticketing.payments.DTO.TicketAdminDetails;
@@ -15,8 +16,10 @@ import tedxlcu.ticketing.payments.Request.createTicketBookingReq;
 import tedxlcu.ticketing.payments.Request.createTicketsReq;
 import tedxlcu.ticketing.payments.model.TicketBooking;
 import tedxlcu.ticketing.payments.model.Tickets;
+import tedxlcu.ticketing.payments.model.User;
 import tedxlcu.ticketing.payments.repository.TicketBookingRepository;
 import tedxlcu.ticketing.payments.repository.TicketRepository;
+import tedxlcu.ticketing.payments.repository.UserRepository;
 
 @Service
 public class TicketsService implements ITicketsService{
@@ -24,6 +27,8 @@ public class TicketsService implements ITicketsService{
   private TicketRepository ticketRepository;
   @Autowired
   private TicketBookingRepository bookingRepository;
+  @Autowired
+  private UserRepository userRepository;
 
   @Override
   public void CreateTicket(createTicketsReq request) {
@@ -84,7 +89,10 @@ public class TicketsService implements ITicketsService{
   }
 
 	@Override
-	public boolean verifyTicketBooking(String ticketId) {
+	public boolean verifyTicketBooking(String ticketId, String userId) {
+    User user = userRepository.findById(userId).orElseThrow(
+      () -> new UsernameNotFoundException("userid null")
+    );
     TicketBooking booking = bookingRepository.findById(ticketId).orElseThrow(
       () -> new RuntimeException("Booking not found")
     );
@@ -92,6 +100,7 @@ public class TicketsService implements ITicketsService{
       throw new AlreadyExistsException("Ticket has already been verified");
     }
     booking.setVerified(true);
+    booking.setVerifiedBy(user.getFirstName() + " " + user.getLastName());
     bookingRepository.save(booking);
     return true;
 	}
