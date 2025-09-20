@@ -43,6 +43,13 @@ public class TicketController {
     ).body(new ApiResponse(true, "200", "Fetched successfully", ticketsList));
   }
 
+  @GetMapping("/admin/get-single/{id}")
+  public ResponseEntity<ApiResponse> getSingleTicket(@PathVariable String id){
+    return ResponseEntity.ok().body(
+      new ApiResponse(true, "200", "Single fetched", ticketsService.getTicketById(id))
+    );
+  }
+
   @GetMapping("/admin/bookings")
   public ResponseEntity<ApiResponse> getAllBookingsForAdmin(){
     TicketAdminDetails details = ticketsService.getAllBookingsForAdmin();

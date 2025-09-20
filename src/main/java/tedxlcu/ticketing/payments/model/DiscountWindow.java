@@ -22,14 +22,20 @@ public class DiscountWindow {
   private LocalDateTime startDate;
   private LocalDateTime endDate;
 
-  public boolean isWindowOpen(java.time.LocalDateTime date){
-    LocalDateTime check = date == null ? LocalDateTime.now() : date;
+  public boolean isWindowOpen(LocalDateTime date){
+    // LocalDateTime check = date == null ? LocalDateTime.now() : date;
 
-    // treat null start/end as unbounded (start==null => always started, end==null => no end)
-    boolean afterStart = (this.startDate == null) || !check.isBefore(this.startDate);
-    boolean beforeEnd  = (this.endDate == null)   || !check.isAfter(this.endDate);
+    // // treat null start/end as unbounded (start==null => always started, end==null => no end)
+    // boolean afterStart = (this.startDate == null) || !check.isBefore(this.startDate);
+    // boolean beforeEnd  = (this.endDate == null)   || !check.isAfter(this.endDate);
 
-    return afterStart && beforeEnd;
+     boolean inDateRange = startDate != null && endDate != null
+        && (date.isEqual(startDate) || date.isAfter(startDate))
+        && (date.isEqual(endDate) || date.isBefore(endDate));
+
+      return inDateRange;
+
+    // return afterStart && beforeEnd;
   }
 
   @CreatedDate

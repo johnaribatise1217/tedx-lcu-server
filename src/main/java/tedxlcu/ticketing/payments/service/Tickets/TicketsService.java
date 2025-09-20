@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import tedxlcu.ticketing.payments.DTO.TicketAdminDetails;
 import tedxlcu.ticketing.payments.Exception.AlreadyExistsException;
+import tedxlcu.ticketing.payments.Exception.ResourceNotFoundException;
 import tedxlcu.ticketing.payments.Mapper.DtoMapper;
 import tedxlcu.ticketing.payments.Request.createTicketBookingReq;
 import tedxlcu.ticketing.payments.Request.createTicketsReq;
@@ -94,5 +95,12 @@ public class TicketsService implements ITicketsService{
     bookingRepository.save(booking);
     return true;
 	}
+
+  @Override
+  public TicketBooking getTicketById(String ticketId) {
+    return bookingRepository.findById(ticketId).orElseThrow(
+      () -> new ResourceNotFoundException("Invalid id does not exists.FRAUD?")
+    );
+  }
   
 }

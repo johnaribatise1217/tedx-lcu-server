@@ -31,6 +31,7 @@ public class SpeakerService implements ISpeakerService {
     newSpeaker.setSpeakerImage(req.getSpeakerImage());
     newSpeaker.setTitle(req.getTitle());
     newSpeaker.setCreatedBy(user.getFirstName() + " " + user.getLastName());
+    newSpeaker.setSocialLinks(req.getSocialLinks());
     speakerRepository.save(newSpeaker);
   }
 
