@@ -34,7 +34,7 @@ import tedxlcu.ticketing.payments.service.Tickets.TicketsService;
 
 @Service
 public class PaymentService {
-  @Value("${paystack.secret-key}")
+  @Value("${paystack.secret-key-prod}")
   private String secretKey;
 
   @Value("${paystack.initialize-url}")
