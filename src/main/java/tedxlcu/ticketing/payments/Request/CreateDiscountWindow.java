@@ -11,4 +11,6 @@ public class CreateDiscountWindow {
   private LocalDateTime startDate;
   private LocalDateTime endDate;
   private int percentage;
+  private String discountName;
+  private String dicountCode;
 }

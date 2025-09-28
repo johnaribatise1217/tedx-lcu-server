@@ -21,6 +21,7 @@ public class DiscountWindow {
   private int percentage; // e.g., 10 for 10%
   private LocalDateTime startDate;
   private LocalDateTime endDate;
+  private String discountName;
 
   public boolean isWindowOpen(LocalDateTime date){
     // LocalDateTime check = date == null ? LocalDateTime.now() : date;

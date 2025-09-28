@@ -45,10 +45,12 @@ public class DiscountService implements IDiscountService {
     ) {
       throw new IllegalArgumentException("End date must be after start date");
     }
-    newDiscountWindow.setCode(uniqueCode);
+    // newDiscountWindow.setCode(uniqueCode);
     newDiscountWindow.setStartDate(window.getStartDate());
     newDiscountWindow.setPercentage(window.getPercentage());
     newDiscountWindow.setEndDate(window.getEndDate());
+    newDiscountWindow.setCode(window.getDicountCode());
+    newDiscountWindow.setDiscountName(window.getDiscountName());
     newDiscountWindow.setCreatedBy(user.getFirstName() + " " + user.getLastName());
     return discountRepository.save(newDiscountWindow);
   }

@@ -61,67 +61,82 @@ public class PaymentService {
   private IDiscountService discountService;
 
   //initialize payment
-  public String initiatePayment(InitializePaymentRequest request) throws Exception{
+  public String initiatePayment(InitializePaymentRequest request) throws Exception {
     Tickets exisTicket = ticketRepository.findById(request.getTicketId()).orElseThrow(
-      () -> new ResourceNotFoundException("request cannot be found")
+        () -> new ResourceNotFoundException("request cannot be found")
     );
-    if(exisTicket.getAvailableQuantity() <= 0){
-      throw new Exception("Oops, Ticket Sold out!");
+
+    if (exisTicket.getAvailableQuantity() <= 0) {
+        throw new Exception("Oops, Ticket Sold out!");
     }
-    // base amount in Naira (ticket price assumed in Naira), convert to kobo (Paystack expects kobo)
-    int baseAmount = exisTicket.getPrice() * request.getQuantity();
-    int amountToBePaidKobo = baseAmount * 100;
-    // apply discount if provided (assumes InitializePaymentRequest#getDiscountCode exists)
+
+    // Base amount in Naira
+    double baseAmountNaira = exisTicket.getPrice() * request.getQuantity();
+
+    // Apply discount (if any) in Naira first
     String discountCode = null;
     int discountPercentage = 0;
     boolean isDiscount = false;
+
     try {
-      discountCode = request.getDiscountCode();
+        discountCode = request.getDiscountCode();
     } catch (Exception ignore) {}
+
     if (discountCode != null && !discountCode.isBlank()) {
-      DiscountWindow w = discountService.validateCode(discountCode);
-      discountPercentage = w.getPercentage();
-      int pct = Math.max(0, Math.min(100, w.getPercentage()));
-      amountToBePaidKobo = (int) Math.round(amountToBePaidKobo * (100 - pct) / 100.0);
-      isDiscount = true;
+        DiscountWindow w = discountService.validateCode(discountCode);
+        discountPercentage = w.getPercentage();
+        int pct = Math.max(0, Math.min(100, discountPercentage));
+        baseAmountNaira = baseAmountNaira * (100 - pct) / 100.0;
+        isDiscount = true;
     }
-    int amountToBePaid = amountToBePaidKobo;
+
+    // ✅ Add Paystack charges: 1.5% of amount + ₦100
+    double paystackFee = (baseAmountNaira * 0.015) + 100;
+    double totalAmountNaira = baseAmountNaira + paystackFee;
+
+    // Convert to Kobo
+    int amountToBePaidKobo = (int) Math.round(totalAmountNaira * 100);
+
     String uniqueRef = "TEDX2025_" + UUID.randomUUID().toString();
 
     Map<String, Object> payload = new HashMap<>();
     payload.put("email", request.getEmail());
-    payload.put("amount", amountToBePaid);
+    payload.put("amount", amountToBePaidKobo);
     payload.put("currency", "NGN");
     payload.put("reference", uniqueRef);
-    payload.put("callback_url", frontendUrl + "/tickets/payments/success?ticketId="+request.getTicketId());
+    payload.put("callback_url", frontendUrl + "/tickets/payments/success?ticketId=" + request.getTicketId());
 
     Map<String, Object> metadata = new HashMap<>();
     metadata.put("cancel_action", frontendUrl + "/tickets");
     metadata.put("discount_percentage", discountPercentage);
     metadata.put("discount_code", discountCode);
     metadata.put("isDiscount", isDiscount);
+    metadata.put("base_amount", baseAmountNaira);
+    metadata.put("paystack_fee", paystackFee);
 
     payload.put("metadata", metadata);
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
-      HttpPost newPost = new HttpPost(initUrl);
-      newPost.setHeader("Authorization", "Bearer " + secretKey);
-      newPost.setHeader("Content-Type", "application/json");
-      newPost.setEntity(new StringEntity(new ObjectMapper().writeValueAsString(payload)));
-      
-      HttpResponse response = client.execute(newPost);
-      String json = EntityUtils.toString(response.getEntity());
-      Map<?, ?> resMap = new ObjectMapper().readValue(json, Map.class);
-      if ((boolean) resMap.get("status")) {
-        return (String) ((Map<?, ?>) resMap.get("data")).get("authorization_url");
-      } else {
-        throw new Exception("Init failed: " + resMap.get("message"));
-      }
+        HttpPost newPost = new HttpPost(initUrl);
+        newPost.setHeader("Authorization", "Bearer " + secretKey);
+        newPost.setHeader("Content-Type", "application/json");
+        newPost.setEntity(new StringEntity(new ObjectMapper().writeValueAsString(payload)));
+
+        HttpResponse response = client.execute(newPost);
+        String json = EntityUtils.toString(response.getEntity());
+        Map<?, ?> resMap = new ObjectMapper().readValue(json, Map.class);
+
+        if ((boolean) resMap.get("status")) {
+            return (String) ((Map<?, ?>) resMap.get("data")).get("authorization_url");
+        } else {
+            throw new Exception("Init failed: " + resMap.get("message"));
+        }
     } catch (Exception e) {
-      System.out.println("Error: " + e.getMessage());
-      throw new Exception("Failed to initiate payment: " + e.getMessage());
+        System.out.println("Error: " + e.getMessage());
+        throw new Exception("Failed to initiate payment: " + e.getMessage());
     }
-  }
+}
+
 
   public TicketBooking verifyPayment(String reference , String ticketId, createTicketBookingReq request ) throws Exception{
     try (CloseableHttpClient client = HttpClients.createDefault()){
