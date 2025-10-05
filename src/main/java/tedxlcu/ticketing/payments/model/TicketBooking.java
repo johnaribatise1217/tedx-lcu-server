@@ -23,6 +23,7 @@ public class TicketBooking {
   private String email;
   private String phone;
   private String institution;
+  private String workshopInterest;
   private String gender; // From screenshot form
   private String ticketTypeId; // Reference to TicketType
   private String ticketName;

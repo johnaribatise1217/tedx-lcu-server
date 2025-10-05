@@ -27,6 +27,7 @@ import tedxlcu.ticketing.payments.Request.createTicketBookingReq;
 import tedxlcu.ticketing.payments.model.DiscountWindow;
 import tedxlcu.ticketing.payments.model.TicketBooking;
 import tedxlcu.ticketing.payments.model.Tickets;
+import tedxlcu.ticketing.payments.repository.DiscountRepository;
 import tedxlcu.ticketing.payments.repository.TicketBookingRepository;
 import tedxlcu.ticketing.payments.repository.TicketRepository;
 import tedxlcu.ticketing.payments.service.Discount.IDiscountService;
@@ -53,6 +54,8 @@ public class PaymentService {
   private MongoTemplate mongoTemplate;
   @Autowired
   private TicketBookingRepository bookingRepository;
+  @Autowired
+  private DiscountRepository discountRepository;
   @Autowired
   private TicketRepository ticketRepository;
   @Autowired
@@ -197,6 +200,11 @@ public class PaymentService {
           Object dcObj = metadata.get("discount_code");
           if (dcObj != null) discountCode = String.valueOf(dcObj);
           newTicketBooking.setDiscountCode(discountCode);
+          DiscountWindow w = discountService.findByCode(discountCode).orElseThrow(
+            () -> new ResourceNotFoundException("Discount code not found")
+          );
+          w.setTimesUsed(w.getTimesUsed() + 1);
+          discountRepository.save(w);
         }
         bookingRepository.save(newTicketBooking);
 

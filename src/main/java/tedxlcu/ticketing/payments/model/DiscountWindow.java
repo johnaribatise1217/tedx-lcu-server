@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tedxlcu.ticketing.payments.Exception.DiscountExpiredException;
 
 @Document(collection = "discount_windows")
 @Data
@@ -22,8 +23,14 @@ public class DiscountWindow {
   private LocalDateTime startDate;
   private LocalDateTime endDate;
   private String discountName;
+  private int usageLimit; // max number of times this code can be used
+  private int timesUsed;  // number of times this code has been used
 
   public boolean isWindowOpen(LocalDateTime date){
+    boolean usageAvailable = timesUsed < usageLimit;
+    if (!usageAvailable) {
+      throw new DiscountExpiredException("Discount code usage limit reached");
+    }
     // LocalDateTime check = date == null ? LocalDateTime.now() : date;
 
     // // treat null start/end as unbounded (start==null => always started, end==null => no end)
@@ -34,7 +41,7 @@ public class DiscountWindow {
         && (date.isEqual(startDate) || date.isAfter(startDate))
         && (date.isEqual(endDate) || date.isBefore(endDate));
 
-      return inDateRange;
+      return inDateRange && usageAvailable;
 
     // return afterStart && beforeEnd;
   }

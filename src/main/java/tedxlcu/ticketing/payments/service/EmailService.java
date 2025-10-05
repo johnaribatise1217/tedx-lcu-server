@@ -98,6 +98,7 @@ public class EmailService {
                           %s
                           <p>Scan this QR at the event for verification.</p>
                       </div>
+                      <p style="color: #555;">If you do not see any QR code attached , another one will be generated for you at the event.</p>
                       <p style="color: #555;">Event Details: November 7, 2025 Lead City University Conference Center. See you there!</p>
                       <p style="text-align: center; color: #888; font-size: 12px;">&copy; TEDx Lead City University</p>
                   </div>

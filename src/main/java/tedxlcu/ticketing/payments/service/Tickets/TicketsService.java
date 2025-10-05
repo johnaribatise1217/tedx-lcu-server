@@ -59,6 +59,7 @@ public class TicketsService implements ITicketsService{
     TicketBooking newBooking = new TicketBooking();
     newBooking.setTransactionReference(trxRef);
     newBooking.setEmail(request.getEmail());
+    newBooking.setWorkshopInterest(request.getWorkshopInterest());
     newBooking.setPhone(request.getPhone());
     newBooking.setFirstName(request.getFirstName());
     newBooking.setLastName(request.getLastName());

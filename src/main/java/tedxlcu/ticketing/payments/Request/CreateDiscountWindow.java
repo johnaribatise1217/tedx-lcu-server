@@ -13,4 +13,5 @@ public class CreateDiscountWindow {
   private int percentage;
   private String discountName;
   private String dicountCode;
+  private int usageLimit;
 }
