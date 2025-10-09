@@ -140,7 +140,6 @@ public class PaymentService {
     }
 }
 
-
   public TicketBooking verifyPayment(String reference , String ticketId, createTicketBookingReq request ) throws Exception{
     try (CloseableHttpClient client = HttpClients.createDefault()){
       HttpGet get = new HttpGet(verifyUrl + reference);
@@ -171,9 +170,9 @@ public class PaymentService {
         }
 
         Integer amountFromPaystackKobo = null;
-        if (data != null && data.get("base_amount") != null) {
+        if (data != null && data.get("amount") != null) {
           try {
-            amountFromPaystackKobo = Integer.parseInt(String.valueOf(data.get("base_amount")));
+            amountFromPaystackKobo = Integer.parseInt(String.valueOf(data.get("amount")));
           } catch (NumberFormatException ignore) {}
         }
 
