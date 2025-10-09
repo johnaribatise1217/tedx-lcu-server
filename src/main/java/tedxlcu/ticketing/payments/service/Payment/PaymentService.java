@@ -94,7 +94,7 @@ public class PaymentService {
     }
 
     // ✅ Add Paystack charges: 1.5% of amount + ₦100
-    double paystackFee = (baseAmountNaira * 0.015) + 100;
+    double paystackFee = (baseAmountNaira * 0.015) + 150;
     double totalAmountNaira = baseAmountNaira + paystackFee;
 
     // Convert to Kobo
@@ -150,7 +150,7 @@ public class PaymentService {
       String json = EntityUtils.toString(response.getEntity());
       Map<?, ?> resMap = new ObjectMapper().readValue(json, Map.class);
 
-      if (
+      if ( 
         (boolean) 
         resMap.get("status") && 
         "success".equals(((Map<?, ?>) resMap.get("data")).get("status"))
@@ -171,14 +171,14 @@ public class PaymentService {
         }
 
         Integer amountFromPaystackKobo = null;
-        if (data != null && data.get("amount") != null) {
+        if (data != null && data.get("base_amount") != null) {
           try {
-            amountFromPaystackKobo = Integer.parseInt(String.valueOf(data.get("amount")));
+            amountFromPaystackKobo = Integer.parseInt(String.valueOf(data.get("base_amount")));
           } catch (NumberFormatException ignore) {}
         }
 
         if (amountFromPaystackKobo != null) {
-          newTicketBooking.setAmountPaid(amountFromPaystackKobo / 100);
+          newTicketBooking.setAmountPaid(amountFromPaystackKobo);
         }
 
         boolean isDiscount = false;
@@ -198,13 +198,18 @@ public class PaymentService {
             } catch (NumberFormatException ignore) {}
           }
           Object dcObj = metadata.get("discount_code");
-          if (dcObj != null) discountCode = String.valueOf(dcObj);
-          newTicketBooking.setDiscountCode(discountCode);
-          DiscountWindow w = discountService.findByCode(discountCode).orElseThrow(
-            () -> new ResourceNotFoundException("Discount code not found")
-          );
-          w.setTimesUsed(w.getTimesUsed() + 1);
-          discountRepository.save(w);
+          if (dcObj != null) {
+            String dcStr = String.valueOf(dcObj).trim();
+            // skip literal "null" or blank strings
+            if (!dcStr.isBlank() && !dcStr.equalsIgnoreCase("null")) {
+              discountCode = dcStr;
+              newTicketBooking.setDiscountCode(discountCode);
+              discountService.findByCode(discountCode).ifPresent(w -> {
+                w.setTimesUsed(w.getTimesUsed() + 1);
+                discountRepository.save(w);
+              });
+            }
+          }
         }
         bookingRepository.save(newTicketBooking);
 
