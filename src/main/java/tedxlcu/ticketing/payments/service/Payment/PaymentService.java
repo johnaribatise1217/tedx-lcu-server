@@ -177,7 +177,7 @@ public class PaymentService {
         }
 
         if (amountFromPaystackKobo != null) {
-          newTicketBooking.setAmountPaid(amountFromPaystackKobo);
+          newTicketBooking.setAmountPaid(amountFromPaystackKobo / 100);
         }
 
         boolean isDiscount = false;
