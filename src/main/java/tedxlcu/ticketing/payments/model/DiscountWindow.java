@@ -27,7 +27,7 @@ public class DiscountWindow {
   private int timesUsed;  // number of times this code has been used
 
   private boolean isUsageExtended() {
-    return this.timesUsed.equals(this.usageLimit);
+    return this.timesUsed == this.usageLimit;
       }
 
   public boolean isWindowOpen(LocalDateTime date){
