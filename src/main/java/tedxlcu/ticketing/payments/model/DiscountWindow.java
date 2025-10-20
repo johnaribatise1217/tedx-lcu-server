@@ -37,7 +37,7 @@ public class DiscountWindow {
         && (date.isEqual(startDate) || date.isAfter(startDate))
         && (date.isEqual(endDate) || date.isBefore(endDate));
 
-      return inDateRange && usageAvailable;
+      return inDateRange;
 
     // return afterStart && beforeEnd;
   }
