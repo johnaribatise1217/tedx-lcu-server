@@ -26,8 +26,13 @@ public class DiscountWindow {
   private int usageLimit; // max number of times this code can be used
   private int timesUsed;  // number of times this code has been used
 
+  private boolean isUsageExtended() {
+    return this.timesUsed.equals(this.usageLimit);
+      }
+
   public boolean isWindowOpen(LocalDateTime date){
     // LocalDateTime check = date == null ? LocalDateTime.now() : date;
+    boolean usageExpired = this.isUsageExtended();
 
     // // treat null start/end as unbounded (start==null => always started, end==null => no end)
     // boolean afterStart = (this.startDate == null) || !check.isBefore(this.startDate);
@@ -37,7 +42,7 @@ public class DiscountWindow {
         && (date.isEqual(startDate) || date.isAfter(startDate))
         && (date.isEqual(endDate) || date.isBefore(endDate));
 
-      return inDateRange;
+      return inDateRange && !usageExpired;
 
     // return afterStart && beforeEnd;
   }
