@@ -99,7 +99,7 @@ public class DiscountService implements IDiscountService {
     DiscountWindow w = discountRepository.findByCode(code).orElseThrow(
       () -> new InvalidDiscountCodeException("Invalid discount code")
     );
-    boolean isExpired = w.getTimesUsed().equals(w.getUsageLimit());
+    boolean isExpired = w.getTimesUsed() == w.getUsageLimit();
     if(isExpired){
       throw new DiscountExpiredException("Discount code usage limit reached");
     }
