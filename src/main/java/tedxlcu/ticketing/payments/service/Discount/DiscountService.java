@@ -99,6 +99,10 @@ public class DiscountService implements IDiscountService {
     DiscountWindow w = discountRepository.findByCode(code).orElseThrow(
       () -> new InvalidDiscountCodeException("Invalid discount code")
     );
+    boolean isExpired = w.getTimesUsed().equals(w.getUsageLimit())
+    if(isExpired){
+      throw new DiscountExpiredException("Discount code usage limit reached");
+    }
     LocalDateTime now = LocalDateTime.now();
     if (!w.isWindowOpen(now)) throw new DiscountExpiredException("Discount is not open");
     if (w.getStartDate() != null && now.isBefore(w.getStartDate())) throw new DiscountExpiredException("Discount not yet active");
