@@ -27,10 +27,6 @@ public class DiscountWindow {
   private int timesUsed;  // number of times this code has been used
 
   public boolean isWindowOpen(LocalDateTime date){
-    boolean usageAvailable = timesUsed < usageLimit;
-    if (!usageAvailable) {
-      throw new DiscountExpiredException("Discount code usage limit reached");
-    }
     // LocalDateTime check = date == null ? LocalDateTime.now() : date;
 
     // // treat null start/end as unbounded (start==null => always started, end==null => no end)
