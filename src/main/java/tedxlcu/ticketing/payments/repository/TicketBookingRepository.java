@@ -8,4 +8,5 @@ import tedxlcu.ticketing.payments.model.TicketBooking;
 @Repository
 public interface TicketBookingRepository extends MongoRepository<TicketBooking, String> {
   TicketBooking findByTransactionReference(String transactionReferece);
+  TicketBooking findByTransactionReferenceAndEmail(String transactionReference, String email);
 }

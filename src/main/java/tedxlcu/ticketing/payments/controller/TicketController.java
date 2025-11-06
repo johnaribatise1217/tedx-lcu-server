@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import tedxlcu.ticketing.payments.DTO.TicketAdminDetails;
@@ -53,6 +54,14 @@ public class TicketController {
       HttpStatus.OK
     ).body(new ApiResponse(true, "200", "Fetched successfully", ticketsList));
   }
+
+  @GetMapping("/generate-qrcode")
+  public ResponseEntity<ApiResponse> generateTicketQRcode(@RequestParam String email, @RequestParam String trxref){
+    String qrCodeUrl = ticketsService.generateTicketQRcode(email, trxref);
+    return ResponseEntity.status(
+      HttpStatus.OK
+    ).body(new ApiResponse(true, "200", "QR Code generated successfully", qrCodeUrl));
+  } 
 
   @GetMapping("/admin/get-single/{id}")
   public ResponseEntity<ApiResponse> getSingleTicket(@PathVariable String id){

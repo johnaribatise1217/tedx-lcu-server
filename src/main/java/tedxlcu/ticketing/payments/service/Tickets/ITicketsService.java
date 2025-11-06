@@ -15,4 +15,5 @@ public interface ITicketsService {
   TicketBooking creatTicketBooking(createTicketBookingReq request, String trxRef, String ticketId);
   TicketAdminDetails getAllBookingsForAdmin();
   boolean verifyTicketBooking(String ticketId, String userId);
+  String generateTicketQRcode(String email, String trxref);
 }

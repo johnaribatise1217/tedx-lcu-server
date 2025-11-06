@@ -112,5 +112,16 @@ public class TicketsService implements ITicketsService{
       () -> new ResourceNotFoundException("Invalid id does not exists.FRAUD?")
     );
   }
+
+	@Override
+	public String generateTicketQRcode(String email, String trxref) {
+		TicketBooking existingBooking = Optional.ofNullable(
+      bookingRepository.findByTransactionReferenceAndEmail(trxref, email)
+    ).orElseThrow(
+      () -> new ResourceNotFoundException("Booking not found for provided details")
+    );
+
+    return existingBooking.getQrCodeUrl();
+	}
   
 }

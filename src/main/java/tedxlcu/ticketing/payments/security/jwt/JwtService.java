@@ -27,6 +27,9 @@ public class JwtService {
   @Value("${security.jwt.secret}")
   private String jwtSecret;
 
+  @Value("${security.jwt.expiration-ms}")
+  private long jwtExpirationMs;
+
   public String generateToken(
     Authentication authentication
   ) {
@@ -36,6 +39,8 @@ public class JwtService {
       .findFirst().orElseThrow(
         () -> new RuntimeException("User has no roles assigned")
       );
+
+      long expirationInMillis = jwtExpirationMs * 1000;
     
       return Jwts.builder()
         .setSubject(userPrincipal.getUsername())
@@ -43,7 +48,7 @@ public class JwtService {
         .claim("role", role)
         .signWith(getSignInKey())
         .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis()+ 1000 * 60 * 72))
+        .setExpiration(new Date(System.currentTimeMillis()+ expirationInMillis))
         .signWith(getSignInKey(), SignatureAlgorithm.HS256)
         .compact();
   }
