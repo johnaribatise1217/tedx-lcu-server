@@ -35,7 +35,8 @@ public class DiscountController {
   }
 
   @GetMapping("/open-discount")
-  public ResponseEntity<ApiResponse> listOpen() {
+  public ResponseEntity<ApiResponse> listOpen(Authentication authentication) {
+    isAdmin(authentication);
     return ResponseEntity.ok().body(
       new ApiResponse(true, "200", "fetched", discountService.listOpenWindows())
     );

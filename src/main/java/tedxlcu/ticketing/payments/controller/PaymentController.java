@@ -1,6 +1,5 @@
 package tedxlcu.ticketing.payments.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -10,21 +9,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import tedxlcu.ticketing.payments.Request.InitializePaymentRequest;
 import tedxlcu.ticketing.payments.Request.createTicketBookingReq;
 import tedxlcu.ticketing.payments.Response.ApiResponse;
 import tedxlcu.ticketing.payments.model.TicketBooking;
-import tedxlcu.ticketing.payments.service.EmailService;
 import tedxlcu.ticketing.payments.service.Payment.PaymentService;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/payment")
+@RequiredArgsConstructor
 public class PaymentController {
-  @Autowired
-  private PaymentService paymentService;
-  @Autowired
-  private EmailService emailService;
+  private final PaymentService paymentService;
 
   @PostMapping("/initialize")
   public ResponseEntity<ApiResponse> 
@@ -36,7 +32,7 @@ public class PaymentController {
   }
 
   @PostMapping("/callback")
-  public ResponseEntity<ApiResponse> 
+  public ResponseEntity<ApiResponse>  
   handleVerificationCallback(
     @RequestParam String trxref,
     @RequestParam String ticketId,
@@ -44,7 +40,6 @@ public class PaymentController {
   {
     try {
       TicketBooking newTicketBooking = paymentService.verifyPayment(trxref, ticketId, request);
-      emailService.sendTicketMail(newTicketBooking);
       return ResponseEntity.ok().body(
         new ApiResponse(true, "200", "Ticket booking verified successfully , check your mail for ticket QR code , do not delete the MAIL.", newTicketBooking)
       );

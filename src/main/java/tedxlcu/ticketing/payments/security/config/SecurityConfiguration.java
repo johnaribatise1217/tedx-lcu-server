@@ -2,7 +2,6 @@ package tedxlcu.ticketing.payments.security.config;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,23 +22,23 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import lombok.RequiredArgsConstructor;
 import tedxlcu.ticketing.payments.security.jwt.AuthenticationTokenFilter;
 import tedxlcu.ticketing.payments.security.user.AdminUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor 
 public class SecurityConfiguration {
-  @Autowired
-  private AdminUserDetailsService adminUserDetailsService;
-  @Autowired
-  private AuthenticationTokenFilter authenticationTokenFilter;
+  private final AdminUserDetailsService adminUserDetailsService;
+  private final AuthenticationTokenFilter authenticationTokenFilter;
 
   private static final List<String> SECURED_URLS = List.of(
     "/api/blogs/create", "/api/blogs/delete/{id}", "/api/blogs/update/{id}", 
-     "/api/auth/me/**" , "/api/auth/create-admin", "/api/tickets/admin/**",
+     "/api/auth/me/**" , "/api/auth/create-admin", "/api/tickets/admin/**", "/api/admin/queue/**",
     "/api/discounts/{id}/delete", "/api/discounts/create", "/api/discounts/{id}/refresh-code",
-    "/api/speakers/create" , "/api/speakers/delete", "/api/speakers/update"
+    "/api/speakers/create" , "/api/speakers/delete", "/api/speakers/update", "/api/discounts/open-discount"
   );
 
   @Bean
@@ -68,13 +67,14 @@ public class SecurityConfiguration {
     return authenticationProvider;
   }
 
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
+  @Bean CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(List.of(
       "https://tedx-lcu-admin-deployed.vercel.app",
       "http://localhost:3000", "http://localhost:3001",
        "https://www.tedxleadcityuniversity.ng", 
+       "https://api.tedxleadcityuniversity.ng",
+       "https://admin.tedxleadcityuniversity.ng",
        "https://tedx-lcu-deployed.vercel.app"));
     configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(List.of("*"));
@@ -84,6 +84,7 @@ public class SecurityConfiguration {
     return source;
   }
 
+  @SuppressWarnings("null")
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) 
   throws Exception{

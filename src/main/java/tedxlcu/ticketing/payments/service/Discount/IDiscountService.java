@@ -12,5 +12,6 @@ public interface IDiscountService {
   void refreshCode(String id, String userId);
   Optional<DiscountWindow> findByCode(String code);
   List<DiscountWindow> listOpenWindows();
-  DiscountWindow validateCode(String code);
+  boolean validateCode(String code);
+  DiscountWindow returnValidCode(String code);
 }

@@ -11,19 +11,25 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import tedxlcu.ticketing.payments.Exception.ResourceNotFoundException;
 import tedxlcu.ticketing.payments.Request.InitializePaymentRequest;
 import tedxlcu.ticketing.payments.Request.createTicketBookingReq;
+import tedxlcu.ticketing.payments.jobs.payload.EmailJobPayload;
+import tedxlcu.ticketing.payments.jobs.payload.EmailJobType;
 import tedxlcu.ticketing.payments.model.DiscountWindow;
 import tedxlcu.ticketing.payments.model.TicketBooking;
 import tedxlcu.ticketing.payments.model.Tickets;
@@ -32,10 +38,13 @@ import tedxlcu.ticketing.payments.repository.TicketBookingRepository;
 import tedxlcu.ticketing.payments.repository.TicketRepository;
 import tedxlcu.ticketing.payments.service.Discount.IDiscountService;
 import tedxlcu.ticketing.payments.service.Tickets.TicketsService;
+import tedxlcu.ticketing.payments.service.user.UserService;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class PaymentService {
-  @Value("${paystack.secret-key-prod}")
+  @Value("${paystack.secret-key}")
   private String secretKey;
 
   @Value("${paystack.initialize-url}")
@@ -50,27 +59,25 @@ public class PaymentService {
   @Value("${frontend.url}")
   private String frontendUrl;
 
-  @Autowired
-  private MongoTemplate mongoTemplate;
-  @Autowired
-  private TicketBookingRepository bookingRepository;
-  @Autowired
-  private DiscountRepository discountRepository;
-  @Autowired
-  private TicketRepository ticketRepository;
-  @Autowired
-  private TicketsService ticketsService;
-  @Autowired
-  private IDiscountService discountService;
+  private final MongoTemplate mongoTemplate;
+  private final TicketBookingRepository bookingRepository;
+  private final DiscountRepository discountRepository;
+  private final TicketRepository ticketRepository;
+  private final TicketsService ticketsService;
+  private final IDiscountService discountService;
+  
+  private final RedisTemplate<String, Object> redisTemplate;
+  private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
   //initialize payment
+  @SuppressWarnings("null")
   public String initiatePayment(InitializePaymentRequest request) throws Exception {
     Tickets exisTicket = ticketRepository.findById(request.getTicketId()).orElseThrow(
-        () -> new ResourceNotFoundException("request cannot be found")
+      () -> new ResourceNotFoundException("request cannot be found")
     );
 
     if (exisTicket.getAvailableQuantity() <= 0) {
-        throw new Exception("Oops, Ticket Sold out!");
+      throw new Exception("Oops, Ticket Sold out!");
     }
 
     // Base amount in Naira
@@ -82,25 +89,25 @@ public class PaymentService {
     boolean isDiscount = false;
 
     try {
-        discountCode = request.getDiscountCode();
+      discountCode = request.getDiscountCode();
     } catch (Exception ignore) {}
 
     if (discountCode != null && !discountCode.isBlank()) {
-        DiscountWindow w = discountService.validateCode(discountCode);
-        discountPercentage = w.getPercentage();
-        int pct = Math.max(0, Math.min(100, discountPercentage));
-        baseAmountNaira = baseAmountNaira * (100 - pct) / 100.0;
-        isDiscount = true;
+      DiscountWindow w = discountService.returnValidCode(discountCode);
+      discountPercentage = w.getPercentage();
+      int pct = Math.max(0, Math.min(100, discountPercentage));
+      baseAmountNaira = baseAmountNaira * (100 - pct) / 100.0;
+      isDiscount = true;
     }
 
-    // ✅ Add Paystack charges: 1.5% of amount + ₦100
+    // Add Paystack charges: 1.5% of amount + ₦100
     double paystackFee = (baseAmountNaira * 0.015) + 150;
     double totalAmountNaira = baseAmountNaira + paystackFee;
 
     // Convert to Kobo
     int amountToBePaidKobo = (int) Math.round(totalAmountNaira * 100);
 
-    String uniqueRef = "TEDX2025_" + UUID.randomUUID().toString();
+    String uniqueRef = "TEDX2026_" + UUID.randomUUID().toString();
 
     Map<String, Object> payload = new HashMap<>();
     payload.put("email", request.getEmail());
@@ -120,26 +127,27 @@ public class PaymentService {
     payload.put("metadata", metadata);
 
     try (CloseableHttpClient client = HttpClients.createDefault()) {
-        HttpPost newPost = new HttpPost(initUrl);
-        newPost.setHeader("Authorization", "Bearer " + secretKey);
-        newPost.setHeader("Content-Type", "application/json");
-        newPost.setEntity(new StringEntity(new ObjectMapper().writeValueAsString(payload)));
+      HttpPost newPost = new HttpPost(initUrl);
+      newPost.setHeader("Authorization", "Bearer " + secretKey);
+      newPost.setHeader("Content-Type", "application/json");
+      newPost.setEntity(new StringEntity(new ObjectMapper().writeValueAsString(payload)));
 
-        HttpResponse response = client.execute(newPost);
-        String json = EntityUtils.toString(response.getEntity());
-        Map<?, ?> resMap = new ObjectMapper().readValue(json, Map.class);
+      HttpResponse response = client.execute(newPost);
+      String json = EntityUtils.toString(response.getEntity());
+      Map<?, ?> resMap = new ObjectMapper().readValue(json, Map.class);
 
-        if ((boolean) resMap.get("status")) {
-            return (String) ((Map<?, ?>) resMap.get("data")).get("authorization_url");
-        } else {
-            throw new Exception("Init failed: " + resMap.get("message"));
-        }
+      if ((boolean) resMap.get("status")) {
+        return (String) ((Map<?, ?>) resMap.get("data")).get("authorization_url");
+      } else {
+        throw new Exception("Init failed: " + resMap.get("message"));
+      }
     } catch (Exception e) {
         System.out.println("Error: " + e.getMessage());
         throw new Exception("Failed to initiate payment: " + e.getMessage());
     }
-}
+  }
 
+  @SuppressWarnings("null")
   public TicketBooking verifyPayment(String reference , String ticketId, createTicketBookingReq request ) throws Exception{
     try (CloseableHttpClient client = HttpClients.createDefault()){
       HttpGet get = new HttpGet(verifyUrl + reference);
@@ -217,12 +225,20 @@ public class PaymentService {
         Update update = new Update().inc("availableQuantity", -request.getQuantity());
         mongoTemplate.findAndModify(query, update, Tickets.class);
 
+        EmailJobPayload wrapper = new EmailJobPayload(0, EmailJobType.TICKET_CONFIRMATION, newTicketBooking);
+        try {
+          redisTemplate.opsForList().leftPush("queue:email:notifications", wrapper);
+          log.info("Queued ticket confirmation email job for booking reference: {}", newTicketBooking.getTransactionReference());
+        } catch (Exception e) {
+          log.error("CRITICAL: Redis push failed for ticket email {}: {}", newTicketBooking.getEmail(), e.getMessage());
+        }
+
         return newTicketBooking;
       } else {
         throw new Exception("Verify failed: " + resMap.get("message"));
       }
     } catch (Exception e) {
-      throw new Exception("Failed to initiate payment: " + e.getMessage());
+      throw new Exception("Failed to verify payment: " + e.getMessage());
     }
   }
 }

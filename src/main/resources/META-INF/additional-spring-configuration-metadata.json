@@ -1,0 +1,47 @@
+{"properties": [
+  {
+    "name": "paystack.secret-key",
+    "type": "java.lang.String",
+    "description": "A description for 'paystack.secret-key'"
+  },
+  {
+    "name": "paystack.verify-url",
+    "type": "java.lang.String",
+    "description": "A description for 'paystack.verify-url'"
+  },
+  {
+    "name": "paystack.initialize-url",
+    "type": "java.lang.String",
+    "description": "A description for 'paystack.initialize-url'"
+  },
+  {
+    "name": "frontend.url",
+    "type": "java.lang.String",
+    "description": "A description for 'frontend.url'"
+  },
+  {
+    "name": "backend.url",
+    "type": "java.lang.String",
+    "description": "A description for 'backend.url'"
+  },
+  {
+    "name": "security.jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'security.jwt.secret'"
+  },
+  {
+    "name": "security.jwt.expiration-ms",
+    "type": "java.lang.String",
+    "description": "A description for 'security.jwt.expiration-ms'"
+  },
+  {
+    "name": "spring.mail.verify.host",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.mail.verify.host'"
+  },
+  {
+    "name": "admin.url",
+    "type": "java.lang.String",
+    "description": "A description for 'admin.url'"
+  }
+]}

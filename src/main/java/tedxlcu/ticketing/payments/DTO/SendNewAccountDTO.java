@@ -1,16 +1,17 @@
-package tedxlcu.ticketing.payments.Response;
+package tedxlcu.ticketing.payments.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@AllArgsConstructor
+@Data 
+@AllArgsConstructor 
 @NoArgsConstructor 
-public class UserDto {
-  private String id;
+public class SendNewAccountDTO {
+  private String to;
   private String firstName;
   private String lastName;
   private String email;
-  private String role; // e.g., "ADMIN", "SUBADMIN"
+  private String password;
+  private String loginUrl;
 }

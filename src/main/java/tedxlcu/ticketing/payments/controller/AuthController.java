@@ -1,6 +1,5 @@
 package tedxlcu.ticketing.payments.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,20 +9,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import tedxlcu.ticketing.payments.Exception.ForbiddenException;
 import tedxlcu.ticketing.payments.Request.JwtResponse;
 import tedxlcu.ticketing.payments.Request.LoginRequest;
 import tedxlcu.ticketing.payments.Request.UpdatePasswordRequest;
 import tedxlcu.ticketing.payments.Request.createUserRequest;
 import tedxlcu.ticketing.payments.Response.ApiResponse;
+import tedxlcu.ticketing.payments.Response.UserDto;
 import tedxlcu.ticketing.payments.security.user.AdminUserDetails;
 import tedxlcu.ticketing.payments.service.user.UserService;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor 
 public class AuthController {
-  @Autowired
-  private UserService userService;
+  private final UserService userService;
 
   private String getCurrentUserId(Authentication authentication) {
     Object principal = authentication.getPrincipal();
@@ -71,15 +72,26 @@ public class AuthController {
     isAdmin(authentication);
     userService.createUser(createUserRequest);
     return ResponseEntity.ok(
-      new ApiResponse(true, "200", "Admin created successfully", null)
+      new ApiResponse(true, "200", "subadmin created successfully", null)
+    );
+  }
+
+  @PostMapping("/onboard-admin")
+  public ResponseEntity<ApiResponse> 
+  onboardAdmin(@RequestBody createUserRequest createUserRequest) 
+  throws Exception {
+    userService.onboardAdmin(createUserRequest);
+    return ResponseEntity.ok(
+      new ApiResponse(true, "200", "Admin onboard successfully", null)
     );
   }
 
   @GetMapping("/me")
   public ResponseEntity<ApiResponse> getAuthUser(Authentication authentication) {
     String userId = getCurrentUserId(authentication);
+    UserDto userDto = userService.getAuthUser(userId);
     return ResponseEntity.ok(
-      new ApiResponse(true, "200", "Fetched successfully", userService.getAuthUser(userId))
+      new ApiResponse(true, "200", "Fetched successfully", userDto)
     );
   }
 

@@ -2,6 +2,8 @@ package tedxlcu.ticketing.payments.Request;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.mongodb.core.index.Indexed;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,6 +14,6 @@ public class CreateDiscountWindow {
   private LocalDateTime endDate;
   private int percentage;
   private String discountName;
-  private String dicountCode;
+  private String discountCode;
   private int usageLimit;
 }

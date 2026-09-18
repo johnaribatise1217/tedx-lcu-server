@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ public class TicketBooking {
   private String id;
   private String firstName;
   private String lastName;
+  
   private String email;
   private String phone;
   private String institution;
@@ -27,6 +29,8 @@ public class TicketBooking {
   private String gender; // From screenshot form
   private String ticketTypeId; // Reference to TicketType
   private String ticketName;
+
+  @Indexed(unique = true)
   private String transactionReference; // From Paystack
   private int ticketQuantity;
   private int amountPaid;

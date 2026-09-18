@@ -10,6 +10,7 @@ import tedxlcu.ticketing.payments.model.Tickets;
 
 public interface ITicketsService {
   void CreateTicket(createTicketsReq request);
+  void updateTicket(createTicketsReq request,  String ticketId);
   TicketBooking getTicketById(String ticketId);
   List<Tickets> GetAllTickets();
   TicketBooking creatTicketBooking(createTicketBookingReq request, String trxRef, String ticketId);

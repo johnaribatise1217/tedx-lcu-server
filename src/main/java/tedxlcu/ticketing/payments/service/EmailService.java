@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -22,43 +21,48 @@ import tedxlcu.ticketing.payments.model.TicketBooking;
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-  @Autowired
   private final JavaMailSender mailSender;
 
+  @SuppressWarnings("null")
   public void sendNewAccountMail(String to, String firstName, String lastName, String email, String password, String loginUrl) throws Exception{
     MimeMessage message = mailSender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message, true);
+    // Pass the actual email address, followed by your display personal name
+    helper.setFrom("no-reply@tedxleadcityuniversity.com.ng", "TEDx Lead City University");
     helper.setTo(to);
-    helper.setSubject("TEDx Lead City University New Account Created");
+    helper.setSubject("TEDx Lead City University New Admin Account Created");
 
     //Html template
     String html = """
-              <html>
-              <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-                  <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-                      <h1 style="color: #FF0000; text-align: center;">TEDx Lead City University</h1>
-                      <p style="color: #555;">Hello %s %s,</p>
-                      <p style="color: #555;">Your admin account has been created successfully. Below are your login details:</p>
-                      <ul style="color: #555;">
-                          <li><strong>Email:</strong> %s</li>
-                          <li><strong>Password:</strong> %s</li>
-                          <li><strong>Login URL:</strong> <a href="%s">%s</a></li>
-                      </ul>
-                      <p style="color: #555;">Please log in and change your password immediately for security purposes.</p>
-                      <p style="color: #555;">Best regards,<br/>TEDx Lead City University Team</p>
-                      <p style="text-align: center; color: #888; font-size: 12px;">&copy; TEDx Lead City University</p>
-                  </div>
-              </body>
-              </html>
-              """.formatted(firstName, lastName, email, password, loginUrl, loginUrl);
+        <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+            <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                <h1 style="color: #FF0000; text-align: center;">TEDx Lead City University</h1>
+                <p style="color: #555;">Hello %s %s,</p>
+                <p style="color: #555;">Your admin account has been created successfully. Below are your login details:</p>
+                <ul style="color: #555;">
+                    <li><strong>Email:</strong> %s</li>
+                    <li><strong>Password:</strong> %s</li>
+                    <li><strong>Login URL:</strong> <a href="%s">%s</a></li>
+                </ul>
+                <p style="color: #555;">Please log in and change your password immediately for security purposes.</p>
+                <p style="color: #555;">Best regards,<br/>TEDx Lead City University Team</p>
+                <p style="text-align: center; color: #888; font-size: 12px;">&copy; TEDx Lead City University</p>
+            </div>
+        </body>
+        </html>
+        """.formatted(firstName, lastName, email, password, loginUrl, loginUrl);
 
         helper.setText(html, true);
         mailSender.send(message);
   }
 
+  @SuppressWarnings("null")
   public void sendTicketMail(TicketBooking booking) throws Exception{
     MimeMessage message = mailSender.createMimeMessage();
     MimeMessageHelper helper = new MimeMessageHelper(message, true);
+    // Pass the actual email address, followed by your display personal name
+    helper.setFrom("no-reply@tedxleadcityuniversity.com.ng", "TEDx Lead City University");
     helper.setTo(booking.getEmail());
     helper.setSubject("TEDx Lead City University Ticket Confirmation");
 

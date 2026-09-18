@@ -17,7 +17,6 @@ import tedxlcu.ticketing.payments.Response.ApiResponse;
 import tedxlcu.ticketing.payments.service.Blogs.IBlogService;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/blogs")
 public class BlogController {
   @Autowired

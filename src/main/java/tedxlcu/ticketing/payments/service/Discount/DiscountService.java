@@ -4,10 +4,10 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
+import tedxlcu.ticketing.payments.Exception.AlreadyExistsException;
 import tedxlcu.ticketing.payments.Exception.DiscountExpiredException;
 import tedxlcu.ticketing.payments.Exception.InvalidDiscountCodeException;
 import tedxlcu.ticketing.payments.Exception.ResourceNotFoundException;
@@ -18,14 +18,13 @@ import tedxlcu.ticketing.payments.repository.DiscountRepository;
 import tedxlcu.ticketing.payments.repository.UserRepository;
 
 @Service
+@RequiredArgsConstructor 
 public class DiscountService implements IDiscountService {
   private static final String ALPHANUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   private static final SecureRandom rnd = new SecureRandom();
   
-  @Autowired
-  private DiscountRepository discountRepository;
-  @Autowired
-  private UserRepository userRepository;
+  private final DiscountRepository discountRepository;
+  private final UserRepository userRepository;
   
   private String genCode() {
     StringBuilder sb = new StringBuilder(6);
@@ -33,12 +32,20 @@ public class DiscountService implements IDiscountService {
     return sb.toString();
   }
 
+  private void doesCodeExist(String code) {
+    boolean itExists = discountRepository.findAll().stream()
+      .anyMatch(discount -> discount.getCode().equals(code));
+    if(itExists) {
+      throw new AlreadyExistsException("code exists already");
+    }
+  }
+
   @Override
   public DiscountWindow createWindow(CreateDiscountWindow window, String userId) {
     User user = userRepository.findById(userId).orElseThrow(
       () -> new ResourceNotFoundException("User not found")
     );
-    String uniqueCode = this.genCode();
+    doesCodeExist(window.getDiscountCode());
     DiscountWindow newDiscountWindow = new DiscountWindow();
     if(window.getStartDate() != null && window.getEndDate() != null && 
       window.getEndDate().isBefore(window.getStartDate())
@@ -51,7 +58,7 @@ public class DiscountService implements IDiscountService {
     newDiscountWindow.setStartDate(window.getStartDate());
     newDiscountWindow.setPercentage(window.getPercentage());
     newDiscountWindow.setEndDate(window.getEndDate());
-    newDiscountWindow.setCode(window.getDicountCode());
+    newDiscountWindow.setCode(window.getDiscountCode());
     newDiscountWindow.setDiscountName(window.getDiscountName());
     newDiscountWindow.setCreatedBy(user.getFirstName() + " " + user.getLastName());
     return discountRepository.save(newDiscountWindow);
@@ -95,7 +102,7 @@ public class DiscountService implements IDiscountService {
   }
 
   @Override
-  public DiscountWindow validateCode(String code) {
+  public boolean validateCode(String code) {
     DiscountWindow w = discountRepository.findByCode(code).orElseThrow(
       () -> new InvalidDiscountCodeException("Invalid discount code")
     );
@@ -107,6 +114,24 @@ public class DiscountService implements IDiscountService {
     if (!w.isWindowOpen(now)) throw new DiscountExpiredException("Discount is not open");
     if (w.getStartDate() != null && now.isBefore(w.getStartDate())) throw new DiscountExpiredException("Discount not yet active");
     if (w.getEndDate() != null && now.isAfter(w.getEndDate())) throw new DiscountExpiredException("Discount expired");
+    
+    return true;
+  }
+
+  @Override
+  public DiscountWindow returnValidCode(String code) {
+    DiscountWindow w = discountRepository.findByCode(code).orElseThrow(
+      () -> new InvalidDiscountCodeException("Invalid discount code")
+    );
+    boolean isExpired = w.getTimesUsed() == w.getUsageLimit();
+    if(isExpired){
+      throw new DiscountExpiredException("Discount code usage limit reached");
+    }
+    LocalDateTime now = LocalDateTime.now();
+    if (!w.isWindowOpen(now)) throw new DiscountExpiredException("Discount is not open");
+    if (w.getStartDate() != null && now.isBefore(w.getStartDate())) throw new DiscountExpiredException("Discount not yet active");
+    if (w.getEndDate() != null && now.isAfter(w.getEndDate())) throw new DiscountExpiredException("Discount expired");
+
     return w;
   }
 }

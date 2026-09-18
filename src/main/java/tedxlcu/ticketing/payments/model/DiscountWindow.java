@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tedxlcu.ticketing.payments.Exception.DiscountExpiredException;
 
 @Document(collection = "discount_windows")
 @Data
@@ -18,7 +18,10 @@ import tedxlcu.ticketing.payments.Exception.DiscountExpiredException;
 public class DiscountWindow {
   @Id
   private String id;
+  
+  @Indexed(unique = true)
   private String code; // unique 6-char code
+  
   private int percentage; // e.g., 10 for 10%
   private LocalDateTime startDate;
   private LocalDateTime endDate;
@@ -28,7 +31,7 @@ public class DiscountWindow {
 
   private boolean isUsageExtended() {
     return this.timesUsed == this.usageLimit;
-      }
+  }
 
   public boolean isWindowOpen(LocalDateTime date){
     // LocalDateTime check = date == null ? LocalDateTime.now() : date;

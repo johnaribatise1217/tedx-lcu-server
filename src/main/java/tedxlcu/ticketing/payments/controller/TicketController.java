@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
 import tedxlcu.ticketing.payments.DTO.TicketAdminDetails;
+import tedxlcu.ticketing.payments.Exception.ForbiddenException;
 import tedxlcu.ticketing.payments.Request.createTicketsReq;
 import tedxlcu.ticketing.payments.Response.ApiResponse;
 import tedxlcu.ticketing.payments.model.Tickets;
@@ -24,11 +26,10 @@ import tedxlcu.ticketing.payments.security.user.AdminUserDetails;
 import tedxlcu.ticketing.payments.service.Tickets.ITicketsService;
 
 @RestController
-@CrossOrigin(origins = "*")
+@RequiredArgsConstructor 
 @RequestMapping("/api/tickets")
 public class TicketController {
-  @Autowired
-  private ITicketsService ticketsService;
+  private final ITicketsService ticketsService;
 
   private String getCurrentUserId(Authentication authentication) {
     Object principal = authentication.getPrincipal();
@@ -39,12 +40,43 @@ public class TicketController {
     }
   }
 
-  @PostMapping("/create")
-  public ResponseEntity<ApiResponse> createTicket(@RequestBody createTicketsReq req){
+  private boolean isAdmin(Authentication authentication) {
+    Object principal = authentication.getPrincipal();
+    if (!(principal instanceof AdminUserDetails)) {
+      throw new ForbiddenException("You are not authorized to perform this action");
+    }
+    AdminUserDetails user = (AdminUserDetails) principal;
+
+    // debug: list authorities (remove or reduce logging in production)
+    var authNames = user.getAuthorities().stream()
+                        .map(a -> a.getAuthority())
+                        .toList();
+
+    // strict match — adjust to the exact granted authority your app uses ("ROLE_ADMIN" or "ADMIN")
+    boolean ok = authNames.stream().anyMatch(a -> a.equals("ROLE_ADMIN") || a.equals("ADMIN"));
+
+    if (!ok) {
+      throw new ForbiddenException("You are not authorized to perform this action. Your role: " + authNames);
+    }
+    return true;
+  }
+
+  @PostMapping("/admin/create")
+  public ResponseEntity<ApiResponse> createTicket(@RequestBody createTicketsReq req, Authentication authentication){
+    isAdmin(authentication);
     ticketsService.CreateTicket(req);
     return ResponseEntity.status(
       HttpStatus.CREATED
     ).body(new ApiResponse(true, "201", "Created successfully", null));
+  }
+
+  @PostMapping("/admin/update/{ticketId}")
+  public ResponseEntity<ApiResponse> UpdateTicket(@RequestBody createTicketsReq req, @PathVariable String ticketId, Authentication authentication){
+    isAdmin(authentication);
+    ticketsService.updateTicket(req, ticketId);
+    return ResponseEntity.status(
+      HttpStatus.OK
+    ).body(new ApiResponse(true, "200", "updated successfully", null));
   }
 
   @GetMapping("/get-all")

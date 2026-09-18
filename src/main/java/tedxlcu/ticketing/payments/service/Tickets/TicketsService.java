@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import tedxlcu.ticketing.payments.DTO.TicketAdminDetails;
 import tedxlcu.ticketing.payments.Exception.AlreadyExistsException;
 import tedxlcu.ticketing.payments.Exception.ResourceNotFoundException;
@@ -22,13 +25,11 @@ import tedxlcu.ticketing.payments.repository.TicketRepository;
 import tedxlcu.ticketing.payments.repository.UserRepository;
 
 @Service
+@RequiredArgsConstructor 
 public class TicketsService implements ITicketsService{
-  @Autowired
-  private TicketRepository ticketRepository;
-  @Autowired
-  private TicketBookingRepository bookingRepository;
-  @Autowired
-  private UserRepository userRepository;
+  private final TicketRepository ticketRepository;
+  private final TicketBookingRepository bookingRepository;
+  private final UserRepository userRepository;
 
   @Override
   public void CreateTicket(createTicketsReq request) {
@@ -44,11 +45,28 @@ public class TicketsService implements ITicketsService{
   }
 
   @Override
+  public void updateTicket(createTicketsReq request, String ticketId) {
+    Tickets ticket = ticketRepository.findById(ticketId).orElseThrow(() -> 
+      new ResourceNotFoundException("Ticket does not exist")
+    );
+    ticket.setBenefits(request.getBenefits());
+    ticket.setName(request.getTicketName());
+    ticket.setPrice(request.getPrice());
+    ticket.setTicketType(request.getTicketType());
+    ticket.setTotalQuantity(request.getTotalQuantity());
+    ticket.setAvailableQuantity(request.getTotalQuantity());
+    ticket.setTicketDescription(request.getTicketDescription());
+
+    ticketRepository.save(ticket);
+  }
+
+  @Override
   public List<Tickets> GetAllTickets() {
     return ticketRepository.findAll();
   }
 
   @Override
+  @CacheEvict(value = "ticketBookings")
   public TicketBooking creatTicketBooking(createTicketBookingReq request, String trxRef, String ticketId) {
     Optional.ofNullable(
       bookingRepository.findByTransactionReference(trxRef)
@@ -77,6 +95,7 @@ public class TicketsService implements ITicketsService{
   }
 
   @Override
+  @Cacheable(value = "ticketBookings")
   public TicketAdminDetails getAllBookingsForAdmin() {
     List<Tickets> tickets = ticketRepository.findAll();
     List<TicketBooking> bookings = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -90,6 +109,7 @@ public class TicketsService implements ITicketsService{
   }
 
 	@Override
+   @CacheEvict(value = "ticketBookings")
 	public boolean verifyTicketBooking(String ticketId, String userId) {
     User user = userRepository.findById(userId).orElseThrow(
       () -> new UsernameNotFoundException("userid null")
