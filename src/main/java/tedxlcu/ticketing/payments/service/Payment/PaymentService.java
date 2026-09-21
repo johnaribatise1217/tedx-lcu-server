@@ -14,6 +14,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -148,6 +149,7 @@ public class PaymentService {
   }
 
   @SuppressWarnings("null")
+  @CacheEvict(value = "ticketBookings")
   public TicketBooking verifyPayment(String reference , String ticketId, createTicketBookingReq request ) throws Exception{
     try (CloseableHttpClient client = HttpClients.createDefault()){
       HttpGet get = new HttpGet(verifyUrl + reference);

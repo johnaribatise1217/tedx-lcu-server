@@ -3,7 +3,6 @@ package tedxlcu.ticketing.payments.service.Tickets;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
@@ -109,7 +108,7 @@ public class TicketsService implements ITicketsService{
   }
 
 	@Override
-   @CacheEvict(value = "ticketBookings")
+  @CacheEvict(value = "ticketBookings")
 	public boolean verifyTicketBooking(String ticketId, String userId) {
     User user = userRepository.findById(userId).orElseThrow(
       () -> new UsernameNotFoundException("userid null")
