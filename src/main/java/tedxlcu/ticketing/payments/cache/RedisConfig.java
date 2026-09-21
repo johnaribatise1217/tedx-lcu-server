@@ -1,8 +1,6 @@
 package tedxlcu.ticketing.payments.cache;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +28,11 @@ public class RedisConfig {
     ObjectMapper mapper = new ObjectMapper();
     mapper.registerModule(new JavaTimeModule());
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    mapper.activateDefaultTyping(
+      mapper.getPolymorphicTypeValidator(),
+      ObjectMapper.DefaultTyping.NON_FINAL,
+      JsonTypeInfo.As.PROPERTY
+    );
 
     GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(mapper);
 
