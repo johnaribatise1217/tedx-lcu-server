@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import tedxlcu.ticketing.payments.Request.CreateDiscountWindow;
+import tedxlcu.ticketing.payments.Response.ValidCodeResponse;
 import tedxlcu.ticketing.payments.model.DiscountWindow;
 
 public interface IDiscountService {
@@ -12,6 +13,6 @@ public interface IDiscountService {
   void refreshCode(String id, String userId);
   Optional<DiscountWindow> findByCode(String code);
   List<DiscountWindow> listOpenWindows();
-  boolean validateCode(String code);
+  ValidCodeResponse validateCode(String code);
   DiscountWindow returnValidCode(String code);
 }

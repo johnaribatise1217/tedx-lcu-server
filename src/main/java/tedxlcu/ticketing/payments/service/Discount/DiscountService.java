@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import tedxlcu.ticketing.payments.Exception.DiscountExpiredException;
 import tedxlcu.ticketing.payments.Exception.InvalidDiscountCodeException;
 import tedxlcu.ticketing.payments.Exception.ResourceNotFoundException;
 import tedxlcu.ticketing.payments.Request.CreateDiscountWindow;
+import tedxlcu.ticketing.payments.Response.ValidCodeResponse;
 import tedxlcu.ticketing.payments.model.DiscountWindow;
 import tedxlcu.ticketing.payments.model.User;
 import tedxlcu.ticketing.payments.repository.DiscountRepository;
@@ -102,7 +104,7 @@ public class DiscountService implements IDiscountService {
   }
 
   @Override
-  public boolean validateCode(String code) {
+  public ValidCodeResponse validateCode(String code) {
     DiscountWindow w = discountRepository.findByCode(code).orElseThrow(
       () -> new InvalidDiscountCodeException("Invalid discount code")
     );
@@ -115,7 +117,7 @@ public class DiscountService implements IDiscountService {
     if (w.getStartDate() != null && now.isBefore(w.getStartDate())) throw new DiscountExpiredException("Discount not yet active");
     if (w.getEndDate() != null && now.isAfter(w.getEndDate())) throw new DiscountExpiredException("Discount expired");
     
-    return true;
+    return new ValidCodeResponse(true, w.getPercentage(), w.getEndDate());
   }
 
   @Override
