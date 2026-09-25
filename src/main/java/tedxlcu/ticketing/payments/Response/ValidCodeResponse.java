@@ -11,4 +11,5 @@ public class ValidCodeResponse {
   private boolean isValid;
   private int percentage; 
   private LocalDateTime endDate;
+  private String discountCode;
 }

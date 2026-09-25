@@ -117,7 +117,7 @@ public class DiscountService implements IDiscountService {
     if (w.getStartDate() != null && now.isBefore(w.getStartDate())) throw new DiscountExpiredException("Discount not yet active");
     if (w.getEndDate() != null && now.isAfter(w.getEndDate())) throw new DiscountExpiredException("Discount expired");
     
-    return new ValidCodeResponse(true, w.getPercentage(), w.getEndDate());
+    return new ValidCodeResponse(true, w.getPercentage(), w.getEndDate(), w.getCode());
   }
 
   @Override
