@@ -65,7 +65,7 @@ public class TicketsService implements ITicketsService{
   }
 
   @Override
-  @CacheEvict(value = "ticketBookings")
+  @CacheEvict(value = "ticketBookings", allEntries = true)
   public TicketBooking creatTicketBooking(createTicketBookingReq request, String trxRef, String ticketId) {
     Optional.ofNullable(
       bookingRepository.findByTransactionReference(trxRef)
@@ -94,7 +94,7 @@ public class TicketsService implements ITicketsService{
   }
 
   @Override
-  @Cacheable(value = "ticketBookings")
+  @Cacheable(value = "ticketBookings", key = "'allBookings'")
   public TicketAdminDetails getAllBookingsForAdmin() {
     List<Tickets> tickets = ticketRepository.findAll();
     List<TicketBooking> bookings = bookingRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -108,7 +108,7 @@ public class TicketsService implements ITicketsService{
   }
 
 	@Override
-  @CacheEvict(value = "ticketBookings")
+  @CacheEvict(value = "ticketBookings", allEntries = true)
 	public boolean verifyTicketBooking(String ticketId, String userId) {
     User user = userRepository.findById(userId).orElseThrow(
       () -> new UsernameNotFoundException("userid null")

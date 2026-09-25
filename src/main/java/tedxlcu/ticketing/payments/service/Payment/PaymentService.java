@@ -149,7 +149,7 @@ public class PaymentService {
   }
 
   @SuppressWarnings("null")
-  @CacheEvict(value = "ticketBookings")
+  @CacheEvict(value = "ticketBookings", allEntries = true)
   public TicketBooking verifyPayment(String reference , String ticketId, createTicketBookingReq request ) throws Exception{
     try (CloseableHttpClient client = HttpClients.createDefault()){
       HttpGet get = new HttpGet(verifyUrl + reference);
